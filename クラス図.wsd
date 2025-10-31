@@ -1,3 +1,4 @@
+' 10/31
 @startuml クラス図
 left to right direction
 class CustomUser{
@@ -89,7 +90,6 @@ CustomUser ||--o{ GroupPost
 FriendShip ||-o{ Message
 
 '通知
-
 Group ||--o{ GroupMember
 Group ||-o{ GroupPost
 
