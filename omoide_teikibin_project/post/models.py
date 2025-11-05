@@ -37,7 +37,11 @@ class Post(models.Model):
     post_id = models.CharField(max_length=100,verbose_name="投稿ID")
 <<<<<<< HEAD
     author = models.CharField(max_length=100,verbose_name="投稿者")
+<<<<<<< HEAD
 =======
     author = models.CharField(max_length=100,verbose_name="投稿者")
     post_content = models.TextField(verbose_name="内容")
 >>>>>>> 552de7258b778881c914889388a5196184edc135
+=======
+    
+>>>>>>> 3c8c193433002e4e5440e0ad2b793a0b8a68f3ec
