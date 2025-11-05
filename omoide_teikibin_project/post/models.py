@@ -22,8 +22,8 @@ class Member(models.Model):
     left_at = models.DateTimeField(default=None, blank=True, null=True,verbose_name="退会日時")
     lastviewed_at = models.DateTimeField(default=timezone.now,verbose_name="最終閲覧日時")
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-   
- 
+    
+    
 class Post(models.Model):
     title = models.CharField(max_length=200,verbose_name="タイトル")
     post_content = models.TextField(verbose_name="投稿内容")
