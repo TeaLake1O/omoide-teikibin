@@ -6,7 +6,11 @@ class Group(models.Model):
         max_length=100,verbose_name="グループID")
     group_name = models.CharField(
         max_length=200,verbose_name="グループ名")
+<<<<<<< HEAD
     group_description = models.TextField(
+=======
+    group_description = models.TextField(blank=True,
+>>>>>>> 552de7258b778881c914889388a5196184edc135
         verbose_name="グループ説明")
     created_at = models.DateTimeField(
         auto_now_add=True,verbose_name="作成日時")
@@ -31,4 +35,9 @@ class Post(models.Model):
     post_images = models.ImageField(default=None, null=True, blank=True,verbose_name="投稿画像")
     parent_post = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True,verbose_name="親投稿")
     post_id = models.CharField(max_length=100,verbose_name="投稿ID")
+<<<<<<< HEAD
     author = models.CharField(max_length=100,verbose_name="投稿者")
+=======
+    author = models.CharField(max_length=100,verbose_name="投稿者")
+    post_content = models.TextField(verbose_name="内容")
+>>>>>>> 552de7258b778881c914889388a5196184edc135
