@@ -32,3 +32,4 @@ class Post(models.Model):
     parent_post = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True,verbose_name="親投稿")
     post_id = models.CharField(max_length=100,verbose_name="投稿ID")
     author = models.CharField(max_length=100,verbose_name="投稿者")
+    post_content = models.TextField(verbose_name="内容")
