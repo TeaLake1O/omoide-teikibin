@@ -1,21 +1,19 @@
 from django.db import models
 from django.utils import timezone
- 
+
 class Group(models.Model):
-    group_id = models.CharField(
-        max_length=100,verbose_name="グループID")
-    group_name = models.CharField(
-        max_length=200,verbose_name="グループ名")
-<<<<<<< HEAD
-    group_description = models.TextField(
-=======
-    group_description = models.TextField(blank=True,
->>>>>>> 552de7258b778881c914889388a5196184edc135
-        verbose_name="グループ説明")
-    created_at = models.DateTimeField(
-        auto_now_add=True,verbose_name="作成日時")
-    creator = models.CharField(
-        max_length=100,verbose_name="作成者")
+    group_id = models.CharField(verbose_name="グループID",
+        max_length=100)
+    group_name = models.CharField(verbose_name="グループ名",
+        max_length=200)
+    creator_username = models.ForeignKey(verbose_name="作成者",
+        )
+    group_description = models.TextField(verbose_name="グループ説明",
+        blank=True)
+    created_at = models.DateTimeField(verbose_name="作成日時",
+        auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name="変更日時",
+        auto_now_add=True)
  
 class Member(models.Model):
     username = models.CharField(max_length=100,verbose_name="ユーザー名")
@@ -35,13 +33,6 @@ class Post(models.Model):
     post_images = models.ImageField(default=None, null=True, blank=True,verbose_name="投稿画像")
     parent_post = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True,verbose_name="親投稿")
     post_id = models.CharField(max_length=100,verbose_name="投稿ID")
-<<<<<<< HEAD
     author = models.CharField(max_length=100,verbose_name="投稿者")
-<<<<<<< HEAD
-=======
     author = models.CharField(max_length=100,verbose_name="投稿者")
     post_content = models.TextField(verbose_name="内容")
->>>>>>> 552de7258b778881c914889388a5196184edc135
-=======
-    
->>>>>>> 3c8c193433002e4e5440e0ad2b793a0b8a68f3ec
