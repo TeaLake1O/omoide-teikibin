@@ -35,4 +35,3 @@ class Post(models.Model):
     post_id = models.CharField(max_length=100,verbose_name="投稿ID")
     author = models.CharField(max_length=100,verbose_name="投稿者")
     author = models.CharField(max_length=100,verbose_name="投稿者")
-    post_content = models.TextField(verbose_name="内容")
