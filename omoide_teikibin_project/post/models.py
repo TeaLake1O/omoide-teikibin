@@ -6,7 +6,7 @@ class Group(models.Model):
         max_length=100,verbose_name="グループID")
     group_name = models.CharField(
         max_length=200,verbose_name="グループ名")
-    group_description = models.TextField(
+    group_description = models.TextField(blank=True,
         verbose_name="グループ説明")
     created_at = models.DateTimeField(
         auto_now_add=True,verbose_name="作成日時")
