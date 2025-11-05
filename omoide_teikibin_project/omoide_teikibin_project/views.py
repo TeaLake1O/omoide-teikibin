@@ -3,7 +3,7 @@ from django.views.generic import ListView, DetailView, FormView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.core.mail import EmailMessage
-
+"""
 from .models import BlogPost, Group, Member, Post, Notification
 from .forms import ContactForm
 
@@ -102,3 +102,4 @@ class ContactView(FormView):
 
         # フォームが有効な場合は親クラスのform_validを呼び出す
         return super().form_valid(form)
+"""
