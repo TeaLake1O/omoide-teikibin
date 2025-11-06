@@ -58,7 +58,12 @@ ROOT_URLCONF = 'omoide_teikibin_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR,"omoide_teikibin_project/templates"],
+        'DIRS': [
+                    BASE_DIR,"omoide_teikibin_project/templates",
+                    BASE_DIR,"accounts/templates",
+                    BASE_DIR,"friend/templates",
+                    BASE_DIR,"post/templates"
+                ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

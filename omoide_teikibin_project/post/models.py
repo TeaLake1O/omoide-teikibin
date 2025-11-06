@@ -24,6 +24,7 @@ class Member(models.Model):
     group = models.ForeignKey(Group, on_delete = models.CASCADE)
     
     class Meta:
+        verbose_name = "メンバー"
         constraints = [
             #groupとusernameの組み合わせをuniqueにして、同一グループへの多重登録を禁止
             models.UniqueConstraint(
@@ -49,6 +50,7 @@ class Post(models.Model):
     group = models.ForeignKey(Group, on_delete = models.CASCADE)
     
     class Meta:
+        verbose_name = "投稿"
         ordering = ["-created_at"]
     
     def __str__(self):
