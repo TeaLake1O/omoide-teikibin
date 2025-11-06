@@ -1,37 +1,29 @@
 from django.db import models
 from django.utils import timezone
+from accounts.models import CustomUser
 
 class Group(models.Model):
-    group_id = models.CharField(verbose_name="グループID",
-        max_length=100)
-    group_name = models.CharField(verbose_name="グループ名",
-        max_length=200)
-    creator_username = models.ForeignKey(verbose_name="作成者",
-        )
-    group_description = models.TextField(verbose_name="グループ説明",
-        blank=True)
-    created_at = models.DateTimeField(verbose_name="作成日時",
-        auto_now_add=True)
-    updated_at = models.DateTimeField(verbose_name="変更日時",
-        auto_now_add=True)
- 
+    group_name = models.CharField(verbose_name="グループ名", max_length=200)
+    creator = models.ForeignKey(CustomUser, on_delete = models.CASCADE, verbose_name="作成者")
+    group_description = models.TextField(verbose_name="グループ説明", null = True,blank=True)
+    created_at = models.DateTimeField(verbose_name="作成日時", )
+    updated_at = models.DateTimeField(verbose_name="変更日時", auto_now = True)
+
+
 class Member(models.Model):
-    username = models.CharField(max_length=100,verbose_name="ユーザー名")
-    role = models.CharField(max_length=50,verbose_name="役割")
-    date_joined = models.DateTimeField(default=timezone.now,verbose_name="参加日時")
-    left_at = models.DateTimeField(default=None, blank=True, null=True,verbose_name="退会日時")
-    lastviewed_at = models.DateTimeField(default=timezone.now,verbose_name="最終閲覧日時")
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    
-    
+    username = models.ForeignKey(CustomUser, on_delete = models.CASCADE ,verbose_name="ユーザー名")
+    role = models.BooleanField(default = False, verbose_name="権限区分")
+    date_joined = models.DateTimeField(auto_now_add = True, verbose_name="参加日時")
+    left_at = models.DateTimeField(blank=True, null=True,verbose_name="退会日時")
+    last_viewed_at = models.DateTimeField(default=timezone.now,verbose_name="最終閲覧日時")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE )
+
+
 class Post(models.Model):
-    title = models.CharField(max_length=200,verbose_name="タイトル")
+    post_id = models.BigAutoField(primary_key = True,verbose_name="投稿ID")
     post_content = models.TextField(verbose_name="投稿内容")
     created_at = models.DateTimeField(auto_now_add=True,verbose_name="作成日時")
     updated_at = models.DateTimeField(auto_now=True,verbose_name="更新日時")
     deleted_at = models.DateTimeField(default=None, blank=True, null=True,verbose_name="削除日時")
     post_images = models.ImageField(default=None, null=True, blank=True,verbose_name="投稿画像")
     parent_post = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True,verbose_name="親投稿")
-    post_id = models.CharField(max_length=100,verbose_name="投稿ID")
-    author = models.CharField(max_length=100,verbose_name="投稿者")
-    author = models.CharField(max_length=100,verbose_name="投稿者")

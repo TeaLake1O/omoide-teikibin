@@ -24,20 +24,20 @@ class Friendship(models.Model):
     class Meta:
         #constraintsリストに複数の制約をいれる
         constraints = [
-            #UniqueConstraintはユニーク制約を作る
-            #今回は、LeastとGreatestにusernameをいれることで大きい方と小さい方としてわけて正規化できる
-            models.UniqueConstraint(
-                expressions=[
-                    Least('username_a', 'username_b'),
-                    Greatest('username_a', 'username_b'),
-                ],
-                name='friend_unique',
-            ),
             #登録時のチェック
             #Qでとってきたusername_aとF(同一行)のusername_Bを比較して、同じにならないようにチェックする
             models.CheckConstraint(
                 check = ~Q(username_a = F('username_b')),
                 name='friend_a_noteq_b',
+            ),
+            models.CheckConstraint(
+                check=Q(username_a__lt=F('username_b')),
+                name='friend_order_fixed',
+            ),
+            # (A,B) のユニーク
+            models.UniqueConstraint(
+                fields=['username_a', 'username_b'],
+                name='friend_unique_pair',
             ),
         ]
 
@@ -48,7 +48,4 @@ class Message(models.Model):
     deleted_at = models.DateTimeField(verbose_name = "削除日時", null = True, blank = True)
     send_at = models.DateTimeField(verbose_name = "送信日時", auto_now_add = True)
     sender_a = models.BooleanField(verbose_name="送信者がAか", default=True)
-    
-    @property
-    def sender(self) -> CustomUser:
-        return self.friendship.username_a if self.sender_a else self.friendship.username_b
+

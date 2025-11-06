@@ -16,15 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from omoide_teikibin_project import views
+from omoide_teikibin_project.views import IndexView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
-    """
-    path('groups/', views.group_list, name='group_list'),
-    path('groups/<int:group_id>/', views.group_detail, name='group_detail'),
-    path('posts/<int:post_id>/', views.post_detail, name='post_detail'),
-    """
-    
+    path('', IndexView.as_view() , name='index'),
 ]
