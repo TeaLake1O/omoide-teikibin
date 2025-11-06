@@ -21,4 +21,9 @@ urlpatterns = [
          # ログイン用のテンプレート(フォーム)をレンダリング
          auth_views.LoginView.as_view(template_name='login.html'),
          name='login'),
+    
+    # ログアウト
+    path('logout/',
+         auth_views.LogoutView.as_view(template_name='logout.html'),
+         name='logout'),
 ]

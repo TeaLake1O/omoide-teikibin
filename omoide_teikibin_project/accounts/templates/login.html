@@ -16,6 +16,11 @@
         {{ form }}
 
         <button type="submit">ログイン</button>
+
+        <input type="hidden"
+               name="next"
+               value="{% url 'index' %}">
+
       </form>
     </main>
   </body>
