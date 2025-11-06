@@ -1,0 +1,19 @@
+<html lang="ja">
+  <head>
+    <title>Sign up</title>
+  </head>
+
+  <body>
+    <main>
+      <div>
+        <h3>サインアップ</h3>
+        <form method = "post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit">ユーザー登録</button>
+        </form>
+      </div>
+    </main>
+  </body>
+
+</html>

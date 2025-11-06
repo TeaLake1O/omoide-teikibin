@@ -20,6 +20,10 @@ from omoide_teikibin_project.views import IndexView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # accounts.urlsへのURLパターン
+    path('', include('accounts.urls')),
+    
     path('', IndexView.as_view() , name='index'),
     path("friend/", include("friend.urls")),
 ]
