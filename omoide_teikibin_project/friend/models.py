@@ -21,6 +21,7 @@ class Friendship(models.Model):
     
     #Metaはdbの制約を決定する
     class Meta:
+        verbose_name = "フレンド"
         #constraintsリストに複数の制約をいれる
         constraints = [
             #登録時のチェック
@@ -47,4 +48,7 @@ class Message(models.Model):
     deleted_at = models.DateTimeField(verbose_name = "削除日時", null = True, blank = True)
     send_at = models.DateTimeField(verbose_name = "送信日時", auto_now_add = True)
     sender_a = models.BooleanField(verbose_name="送信者がAか", default=True)
+    
+    class Meta:
+        verbose_name = "メッセージ"
 
