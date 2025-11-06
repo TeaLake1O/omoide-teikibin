@@ -1,7 +1,6 @@
 from django.db import models
 
 from accounts.models import CustomUser
-from django.db.models.functions import Least, Greatest
 from django.db.models import Q,F
 
 class Friendship(models.Model):
@@ -17,7 +16,7 @@ class Friendship(models.Model):
     
     status = models.CharField(max_length = 4, choices = Status.choices, default = Status.PENDING_A2B)
     
-    created_at = models.DateTimeField(auto_now_add = True,verbose_name="作成日時")
+    created_at = models.DateTimeField(auto_now_add = True, verbose_name="作成日時")
     friend_date = models.DateTimeField(null = True, blank = True, verbose_name = "フレンド成立日")
     
     #Metaはdbの制約を決定する
@@ -31,19 +30,19 @@ class Friendship(models.Model):
                 name='friend_a_noteq_b',
             ),
             models.CheckConstraint(
-                check=Q(username_a__lt=F('username_b')),
-                name='friend_order_fixed',
+                #__ltでless thanになる（より小さい）
+                check = Q(username_a__lt = F('username_b')),
+                name='friend_a_less_than_username_b',
             ),
-            # (A,B) のユニーク
             models.UniqueConstraint(
                 fields=['username_a', 'username_b'],
                 name='friend_unique_pair',
-            ),
+            )
         ]
 
 class Message(models.Model):
     friendship = models.ForeignKey(Friendship ,verbose_name = "フレンド", on_delete= models.CASCADE)
-    message_image = models.ImageField(verbose_name = "メッセージ画像",null = True, blank = True,)
+    message_image = models.ImageField(verbose_name = "メッセージ画像",null = True, blank = True)
     message_text = models.TextField(verbose_name = "メッセージ内容", null = True, blank = True)
     deleted_at = models.DateTimeField(verbose_name = "削除日時", null = True, blank = True)
     send_at = models.DateTimeField(verbose_name = "送信日時", auto_now_add = True)
