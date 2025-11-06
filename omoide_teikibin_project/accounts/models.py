@@ -9,7 +9,6 @@ class CustomUser(AbstractUser):
     birthday = models.DateField(blank = True, null= True, verbose_name = "誕生日")
     user_icon = models.ImageField(null = True, blank= True, verbose_name = "アイコン")
     email = models.EmailField(unique = True,max_length=254, verbose_name = "メールアドレス")
-    
 
 
 
