@@ -40,6 +40,8 @@ class Friendship(models.Model):
                 name='friend_unique_pair',
             )
         ]
+    def __str__(self):
+        return f"{self.username_a}と{self.username_b}のフレンド関係"
 
 class Message(models.Model):
     friendship = models.ForeignKey(Friendship ,verbose_name = "フレンド", on_delete= models.CASCADE)
@@ -51,4 +53,6 @@ class Message(models.Model):
     
     class Meta:
         verbose_name = "メッセージ"
+    def __str__(self):
+        return f"{self.friendship.username_a}と{self.friendship.username_b}のメッセージ"
 
