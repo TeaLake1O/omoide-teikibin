@@ -22,7 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # accounts.urlsへのURLパターン
-    path('', include('accounts.urls')),
+    path('accounts/', include('accounts.urls')),
     
     path('', IndexView.as_view() , name='index'),
 ]
