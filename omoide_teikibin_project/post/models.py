@@ -27,7 +27,7 @@ class Member(models.Model):
         constraints = [
             #groupとusernameの組み合わせをuniqueにして、同一グループへの多重登録を禁止
             models.UniqueConstraint(
-                fields=['group', 'username'],
+                fields=['group', 'member'],
                 name='group_unique_pair',
             )
         ]
@@ -39,7 +39,7 @@ class Member(models.Model):
 class Post(models.Model):
     #URLに使うのでUUIDField
     post_id = models.UUIDField(primary_key = True,default = uuid.uuid4, verbose_name="投稿ID")
-    post = models.ForeignKey(CustomUser, on_delete = models.CASCADE, )
+    post_user = models.ForeignKey(CustomUser, on_delete = models.CASCADE, )
     post_content = models.TextField(verbose_name="投稿内容")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
     updated_at = models.DateTimeField(auto_now=True,verbose_name="更新日時")
@@ -52,4 +52,4 @@ class Post(models.Model):
         ordering = ["-created_at"]
     
     def __str__(self):
-        return f"投稿者:{self.post.username}"
+        return f"投稿者:{self.post_user.username}"
