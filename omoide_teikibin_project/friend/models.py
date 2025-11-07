@@ -28,7 +28,7 @@ class Friendship(models.Model):
             #Qでとってきたusername_aとF(同一行)のusername_Bを比較して、同じにならないようにチェックする
             models.CheckConstraint(
                 check = ~Q(username_a = F('username_b')),
-                name='friend_a_noteq_b',
+                name="friend_a_noteq_b",
             ),
             models.CheckConstraint(
                 #__ltでless thanになる（より小さい）
@@ -37,7 +37,7 @@ class Friendship(models.Model):
             ),
             models.UniqueConstraint(
                 fields=['username_a', 'username_b'],
-                name='friend_unique_pair',
+                name="friend_unique",
             )
         ]
     def __str__(self):
@@ -54,5 +54,5 @@ class Message(models.Model):
     class Meta:
         verbose_name = "メッセージ"
     def __str__(self):
-        return f"{self.friendship.username_a}と{self.friendship.username_b}のメッセージ"
+        return f"{self.friendship.username_a}(送信者A)と{self.friendship.username_b}(送信者B)のメッセージ"
 
