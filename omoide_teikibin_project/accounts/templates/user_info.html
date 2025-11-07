@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>User Info</title>
+  </head>
+
+  <body>
+    <main>
+      <div>
+        <h3>ユーザー情報</h3>
+        {% if user.is_authenticated %}
+        <p>{{ user.get_username }}でログイン中</p>
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit">ログアウト</button>
+        </form>
+        {% else %}
+        <p>ログインしていません</p>
+        {% endif %}
+        <form method = "post">
+          {% csrf_token %}
+          <p>ユーザー名：{{ object.username }}</p>
+          <p>{{ object.password }}</p>
+
+        </form>
+      </div>
+    </main>
+  </body>
+
+</html>

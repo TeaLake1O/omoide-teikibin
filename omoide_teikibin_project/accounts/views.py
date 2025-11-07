@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.views.generic import CreateView, TemplateView
+from django.views.generic import TemplateView, DetailView, CreateView, UpdateView
+from .models import CustomUser
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
 
@@ -40,11 +41,11 @@ class SignUpSuccessView(TemplateView):
     # レンダリングするテンプレート
     template_name = "signup_success.html"
 
-class UserInfoView(TemplateView):
+class UserInfoView(DetailView):
     '''ユーザ情報ページのビュー
     '''
+    model = CustomUser
     # レンダリングするテンプレート
-    template_name = "userinfo.html"
+    template_name = "user_info.html"
     
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs)
+    
