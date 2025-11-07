@@ -1,7 +1,8 @@
 from django.db import models
-from accounts.models import CustomUser
 from django.utils import timezone
+from django.conf import settings
 import uuid
+CustomUser = settings.AUTH_USER_MODEL
 
 
 class Group(models.Model):
@@ -49,9 +50,38 @@ class Post(models.Model):
     parent_post = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name="親投稿")
     group = models.ForeignKey(Group, on_delete = models.CASCADE)
     
+    
     class Meta:
         verbose_name = "投稿"
         ordering = ["-created_at"]
     
     def __str__(self):
         return f"投稿者:{self.post_user.username}"
+
+class BlogPost(models.Model):
+    """ブログ投稿を表すモデル"""
+    title = models.CharField(verbose_name="タイトル", max_length=200)
+    content = models.TextField(verbose_name="本文")
+    posted_at = models.DateTimeField(verbose_name="投稿日時", default=timezone.now)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="投稿者"
+    )
+
+
+class Notification(models.Model):
+    """お知らせを表すモデル"""
+    username = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="ユーザー")
+    notification_status = models.CharField(verbose_name="通知状態", max_length=500)
+    notification_image = models.ImageField(verbose_name="通知画像", null=True, blank=True)
+    notification_message = models.CharField(verbose_name="通知メッセージ", max_length=500)
+    Group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="関連グループ", null=True, blank=True)
+    created_at = models.DateTimeField(verbose_name="作成日時", auto_now_add=True)
+    is_read = models.BooleanField(verbose_name="既読", default=False)
+    title = models.CharField(verbose_name="タイトル", max_length=200)
+    def __str__(self):
+        return f"お知らせ:{self.notification_message} - ユーザー:{self.username.username}"
+    class Meta:
+        verbose_name = "お知らせ"
+        ordering = ["-created_at"]
+        
+    
