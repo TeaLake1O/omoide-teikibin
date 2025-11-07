@@ -8,7 +8,6 @@ class FriendView(LoginRequiredMixin, ListView):
     model = Friendship
     
     template_name = "friend_view.html"
-    redirect_field_name = "next"
     
     def get_queryset(self):
         user = self.request.user

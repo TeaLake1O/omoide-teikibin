@@ -1,4 +1,13 @@
 <p>{{ request.user }}のフレンド一覧</p>
+{% if user.is_authenticated %}
+    <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button type="submit">ログアウト</button>
+    </form>
+    {% else %}
+    <a href={% url 'accounts:signup' %}>新規登録</a>
+    <a href={% url 'accounts:login' %}>ログイン</a>
+{% endif %}
 {% for friend in object_list %} {% if friend.username_a == request.user%}
 <div>{{ friend.username_b}}</div>
 {% else %}
