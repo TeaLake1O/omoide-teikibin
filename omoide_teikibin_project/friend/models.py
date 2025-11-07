@@ -33,7 +33,7 @@ class Friendship(models.Model):
             models.CheckConstraint(
                 #__ltでless thanになる（より小さい）
                 check = Q(username_a__lt = F('username_b')),
-                name='friend_a_less_than_username_b',
+                name = "combinations_already_exist",
             ),
             models.UniqueConstraint(
                 fields=['username_a', 'username_b'],
