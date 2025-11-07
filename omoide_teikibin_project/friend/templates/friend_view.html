@@ -1,3 +1,6 @@
-{% for friend in object_list %}
-<div>{{ friend.username_a}}と{{ friend.username_b }}</div>
-{% endfor %}
+<p>{{ request.user }}のフレンド一覧</p>
+{% for friend in object_list %} {% if friend.username_a == request.user%}
+<div>{{ friend.username_b}}</div>
+{% else %}
+<div>{{ friend.username_a}}</div>
+{% endif %} {% endfor %}
