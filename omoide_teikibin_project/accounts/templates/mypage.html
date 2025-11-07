@@ -12,6 +12,7 @@
         <p>{{ user.get_username }}でログイン中</p>
         <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
+            <a href='../{{ object.id }}'>ユーザー情報へ</a>
             <button type="submit">ログアウト</button>
         </form>
         <form method = "post">
