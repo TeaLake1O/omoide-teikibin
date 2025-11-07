@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from django.views.generic import ListView
+from .models import Friendship
 
-# Create your views here.
+class FriendView(ListView):
+    model = Friendship
+    
+    template_name = "friend_view.html"
