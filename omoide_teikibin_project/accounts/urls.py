@@ -26,8 +26,13 @@ urlpatterns = [
          auth_views.LogoutView.as_view(template_name='logout.html'),
          name='logout'),
     
+    # マイページのビューの呼び出し
+    path('mypage/<int:pk>',
+         views.MypageView.as_view(),
+         name='mypage'),
+    
     # ユーザ情報のビューの呼び出し
     path('<int:pk>',
          views.UserInfoView.as_view(),
-         name='userinfo')
+         name='userinfo'),
 ]

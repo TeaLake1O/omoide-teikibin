@@ -7,7 +7,7 @@
   <body>
     <main>
       <div>
-        <h3>ユーザー情報</h3>
+        <h3>マイページ</h3>
         {% if user.is_authenticated %}
         <p>{{ user.get_username }}でログイン中</p>
         <form method="post" action="{% url 'accounts:logout' %}">
@@ -17,10 +17,6 @@
         <form method = "post">
           {% csrf_token %}
           <p>ユーザー名：{{ object.username }}<a href='./{{ object.id }}'>変更</a></p>
-          <p>パスワード：●●●●●●●●<a href='./{{ object.id }}'>変更</a></p>
-          <p>email：{{ object.email }}<a href='./{{ object.id }}'>変更</a></p>
-          <p>生年月日：{{ object.birthday }}<a href='./{{ object.id }}'>変更</a></p>
-          <p>登録日：{{ object.date_joined }}</p>
         </form>
         
         {% else %}
