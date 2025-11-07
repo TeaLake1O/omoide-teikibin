@@ -13,8 +13,9 @@
       {% csrf_token %}
       <button type="submit">ログアウト</button>
     </form>
-    <div>
+    <div> <!-- 各ページへのリンク(暫定) -->
       <a href='./accounts/mypage/{{ user.id }}'>マイページ</a>
+      
     </div>
     
     <!-- ログアウト中の表示 -->
