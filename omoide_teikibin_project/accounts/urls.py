@@ -27,7 +27,7 @@ urlpatterns = [
          name='logout'),
     
     # ユーザ情報のビューの呼び出し
-    path('info/',
+    path('<int:pk>',
          views.UserInfoView.as_view(),
          name='userinfo')
 ]
