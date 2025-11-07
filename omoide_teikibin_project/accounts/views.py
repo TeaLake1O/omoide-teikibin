@@ -21,10 +21,10 @@ class SignUpView(CreateView):
         フォームデータの登録を行う
         
         paramaters:
-          form(django.forms.Form):
+            form(django.forms.Form):
             form_classに格納されているCustomUserCreationFormオブジェクト
         Return:
-          HttpResponseRedirectオブジェクト:
+            HttpResponseRedirectオブジェクト:
             スーパークラスのform_valid()の戻り値を返すことで、
             success_urlで設定されているURLにリダイレクトさせる
         '''
@@ -39,3 +39,12 @@ class SignUpSuccessView(TemplateView):
     '''
     # レンダリングするテンプレート
     template_name = "signup_success.html"
+
+class UserInfoView(TemplateView):
+    '''ユーザ情報ページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = "userinfo.html"
+    
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs)
