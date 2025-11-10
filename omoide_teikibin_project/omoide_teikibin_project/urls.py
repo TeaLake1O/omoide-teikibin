@@ -24,9 +24,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # accounts.urlsへのURLパターン
-    path('accounts/', include('accounts.urls')),
+    path('api/accounts/', include('accounts.urls')),
     
     path('', IndexView.as_view() , name='index'),
-    path("friend_api/", include("friend.urls")),
+    path("api/friend/", include("friend.urls")),
     #開発時のみ、メディアURL用
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

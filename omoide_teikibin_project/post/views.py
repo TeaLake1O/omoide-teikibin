@@ -10,8 +10,8 @@ class PostListAPIView(View):
     def get(self, request, *args, **kwargs):
         # 作成者のユーザー名を含む必要なフィールドを取得します
         posts = Post.objects.order_by('-created_at').values(
-    'post_id', 'post_user__username', 'post_content', 'created_at'
-)
+        'post_id', 'post_user__username', 'post_content', 'created_at'
+    )
 
         return JsonResponse(list(posts), safe=False)
 
