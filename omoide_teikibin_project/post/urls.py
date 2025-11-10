@@ -1,25 +1,20 @@
-# post/urls.py (Đề xuất sửa đổi)
 from django.urls import path
 from . import views
 
 app_name = 'post'
 
 urlpatterns = [
-    # URLs để render trang (Page-rendering views)
-    # SỬ DỤNG PostListView (CBV)
+
     path('list_page/', views.PostListView.as_view(), name='post_list_page'), 
     path('detail/<uuid:post_id>/', views.post_detail_page, name='post_detail_page'), 
-    # SỬ DỤNG PostCreatePageView (CBV)
     path('create_page/', views.PostCreatePageView.as_view(), name='create_post_page'), 
 
-    # URLs cho API (Giữ nguyên nếu cần)
     path('api/list/', views.PostListAPIView.as_view(), name='post_list_api'), 
     path('api/detail/<uuid:pk>/', views.PostDetailAPIView.as_view(), name='post_detail_api'), 
     path('api/create/', views.create_post, name='create_post_api'), 
 
     path('', views.homepage, name='homepage'),
     
-    # post/urls.py (Thêm vào urlpatterns)
 
     # --- Group URLs ---
     path('groups/', views.GroupListView.as_view(), name='group_list'),
