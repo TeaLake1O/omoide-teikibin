@@ -59,9 +59,9 @@ class FriendRequestSerializer(serializers.ModelSerializer):
 #フレンド申請、もしくはフレンド承認のpost用シリアライザ
 class FriendWriteSerializer(serializers.ModelSerializer):
     
-    other_id = serializers.IntegerField()
+    other_id = serializers.IntegerField(write_only = True)
     #is_positiveはフレンド依頼、フレンド承認のような操作かそうでないかを区別するために使う
-    is_positive = serializers.BooleanField()
+    is_positive = serializers.BooleanField(write_only = True)
     
     class Meta:
         model = Friendship
@@ -81,7 +81,7 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         #FriendShipに関係がすでにあった場合
         if friendship:
             if is_positive:
-                friendship.Status.ACPT
+                friendship.status = Friendship.Status.ACPT
                 friendship.save(update_fields = ["status"])
                 return friendship
             else:

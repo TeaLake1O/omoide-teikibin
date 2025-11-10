@@ -3,6 +3,7 @@ from .views import *
 
 
 urlpatterns = [
-    path("view", FriendView.as_view(), name= "view"),
-    path("request", RequestListView.as_view(), name= "request"),
+    path("", FriendView.as_view(), name= "friend_view"),
+    path("requests/", RequestListView.as_view(), name= "request_view"),
+    path("action/", FriendRequestView.as_view(), name= "request_action"),
 ]
