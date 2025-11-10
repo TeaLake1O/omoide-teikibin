@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ホームページ - シンプルSNS</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <button class="icon-button menu-button">☰</button>
+            <h1 class="title">ホームページ</h1>
+            <button class="icon-button home-button">🏠</button>
+        </header>
+
+        <main class="content">
+            <section class="post">
+                <div class="user-info">
+                    <button class="my-page-button">マイページ</button>
+                    <div class="text-info">
+                        <span class="nickname">ユーザーA</span>
+                        <p class="message">今日もいい天気ですね☀️</p>
+                    </div>
+                </div>
+                <div class="post-image-placeholder">投稿画像</div>
+            </section>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="{% url 'post:homepage' %}"><button class="nav-item active">🏠 ホーム</button></a>
+            <a href="{% url 'post:post_list' %}"><button class="nav-item">📜 投稿一覧</button></a>
+            <a href="{% url 'post:create_post' %}"><button class="nav-item">➕ 投稿作成</button></a>
+            <a href="{% url 'post:group_list' %}"><button class="nav-item">👥 グループ</button></a>
+            <a href="{% url 'post:notification_list' %}"><button class="nav-item">🔔 通知</button></a>
+            <a href="#"><button class="nav-item">🧑‍🤝‍🧑 フレンド</button></a>
+        </nav>
+    </div>
+</body>
+</html>
