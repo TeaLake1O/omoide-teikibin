@@ -35,4 +35,9 @@ urlpatterns = [
     path('<int:pk>',
          views.UserInfoView.as_view(),
          name='userinfo'),
+    
+    # パスワード確認ページのビューの呼び出し
+    path('passwordcheck/',
+         views.PasswordCheck.as_view(),
+         name='passwordcheck')
 ]
