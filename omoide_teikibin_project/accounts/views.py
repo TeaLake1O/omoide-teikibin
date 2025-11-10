@@ -41,6 +41,13 @@ class SignUpSuccessView(TemplateView):
     # レンダリングするテンプレート
     template_name = "signup_success.html"
 
+class MypageView(DetailView):
+    '''マイページのビュー
+    '''
+    model = CustomUser
+    # レンダリングするテンプレート
+    template_name = "mypage.html"
+
 class UserInfoView(DetailView):
     '''ユーザ情報ページのビュー
     '''

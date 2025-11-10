@@ -1,22 +1,31 @@
 <html lang="ja">
-    <head>
-        <title>omoide teikibin</title>
-    </head>
+  <head>
+    <title>omoide teikibin</title>
+  </head>
 
-    <body>
-        <h1>おもいで定期便</h1>
-
-        {% if user.is_authenticated %}
-        <p>{{ user.get_username }}でログイン中</p>
-        <form method="post" action="{% url 'accounts:logout' %}">
-            {% csrf_token %}
-            <button type="submit">ログアウト</button>
-        </form>
-        {% else %}
-        <a href={% url 'accounts:signup' %}>新規登録</a>
-        <a href={% url 'accounts:login' %}>ログイン</a>
-        {% endif %}
-
-        <h2>サブタイトル</h2>
-    </body>
+  <body>
+    <h1>おもいで定期便</h1>
+    
+    <!-- ログイン中の表示 -->
+    {% if user.is_authenticated %}
+    <p>{{ user.get_username }}でログイン中</p>
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit">ログアウト</button>
+    </form>
+    <div> <!-- 各ページへのリンク(暫定) -->
+      <a href='./accounts/mypage/{{ user.id }}'>マイページ</a>
+      
+    </div>
+    
+    <!-- ログアウト中の表示 -->
+    {% else %}
+    <div>
+      <a href={% url 'accounts:signup' %}>新規登録</a>
+      <a href={% url 'accounts:login' %}>ログイン</a>
+    </div>
+    {% endif %}
+    
+    <h2>サブタイトル</h2>
+  </body>
 </html>
