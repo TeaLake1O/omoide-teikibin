@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView, DetailView, CreateView, UpdateView
+from django.contrib.auth.hashers import check_password
+from django.views.generic import TemplateView, DetailView, CreateView, FormView, View
 from .models import CustomUser
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, PasswordCheckForm
 from django.urls import reverse_lazy
 
 class SignUpView(CreateView):
@@ -55,4 +56,34 @@ class UserInfoView(DetailView):
     # レンダリングするテンプレート
     template_name = "user_info.html"
     
+    def get_context_data(self, **kwargs):
+        # contextの取得
+        context = super().get_context_data(**kwargs)
+
+        
+        return context
     
+# class PasswordCheck(FormView):
+#     '''パスワード確認ページのビュー
+#     '''
+#     # forms.pyで定義したフォームのクラス
+#     form_class = PasswordCheckForm
+#     success_url = reverse_lazy('accounts:signup_success')
+#     # レンダリングするテンプレート
+#     template_name = "password_check.html"
+    
+#     def form_valid(self, form):
+#         print(1)
+#         return super().form_valid(form)
+
+class PasswordCheck(View):
+
+    template_name = "password_check.html"
+
+    def post(self, request):
+            pass_text = request.POST.get("password", "")
+           
+            if request.user.check_password(pass_text):
+                print("ok")
+            else:
+                print("dame")
