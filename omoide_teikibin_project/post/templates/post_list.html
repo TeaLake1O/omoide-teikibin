@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ホームページ - シンプルSNS</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+  <h2>投稿一覧</h2>
+  <a href="{% url 'post:create_post_page' %}">新しい投稿を作成する ➕</a>
+  <hr>
+
+  {% for post in posts %}
+    <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+      <p><strong>{{ post.post_user.username }}</strong> | {{ post.created_at|date:"Y/m/d H:i" }}</p>
+      <p>{{ post.post_content }}</p>
+      {% if post.post_images %}
+        <img src="{{ post.post_images.url }}" style="width: 200px;"><br>
+      {% endif %}
+      <a href="{% url 'post:post_detail_page' post_id=post.post_id %}">詳細を見る</a>
+    </div>
+  {% empty %}
+    <p>投稿がまだありません。</p>
+  {% endfor %}
+</body>
+</html>
