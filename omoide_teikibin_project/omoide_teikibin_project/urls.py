@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from omoide_teikibin_project.views import IndexView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,5 +27,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     
     path('', IndexView.as_view() , name='index'),
-    path("friend/", include("friend.urls")),
-]
+    path("friend_api/", include("friend.urls")),
+    #開発時のみ、メディアURL用
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

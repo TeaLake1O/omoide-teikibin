@@ -1,13 +1,19 @@
 from django.views.generic import ListView, View, FormView, UpdateView, CreateView
+
 from .models import Friendship
+from friend.serialyzer import UserFriendSerializer
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from rest_framework import permissions, generics
 
 
-class FriendView(LoginRequiredMixin, ListView):
+class FriendView(generics.ListAPIView):
     model = Friendship
-    
-    template_name = "friend_view.html"
+    #シリアライザ
+    serializer_class = UserFriendSerializer
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         user = self.request.user
