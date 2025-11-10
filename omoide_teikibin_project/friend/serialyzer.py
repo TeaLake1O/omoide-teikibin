@@ -95,3 +95,4 @@ class FriendWriteSerializer(serializers.ModelSerializer):
             status = "A2B"
         )
         return friendship
+

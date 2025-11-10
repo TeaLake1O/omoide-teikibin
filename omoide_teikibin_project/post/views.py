@@ -190,7 +190,7 @@ class PostCreatePageView(LoginRequiredMixin, CreateView):
         # --- KẾT THÚC LOGIC TẠO THÔNG BÁO ---
             
         return response
- 
+
 class NotificationListView(LoginRequiredMixin, ListView):
     """Hiển thị danh sách thông báo CHƯA ĐỌC của người dùng"""
     model = Notification

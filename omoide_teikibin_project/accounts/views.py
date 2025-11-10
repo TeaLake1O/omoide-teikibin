@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView, DetailView, CreateView, UpdateView
+from django.views.generic import TemplateView, DetailView, CreateView, UpdateView,View
 from .models import CustomUser
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
@@ -34,7 +34,8 @@ class SignUpView(CreateView):
         self.object = user
         # 戻り値はスーパークラスのform_valid()の戻り値(HttpResponseRedirect)
         return super().form_valid(form)
-    
+
+
 class SignUpSuccessView(TemplateView):
     '''サインアップ完了ページのビュー
     '''
@@ -55,4 +56,16 @@ class UserInfoView(DetailView):
     # レンダリングするテンプレート
     template_name = "user_info.html"
     
+
+class PasswordCheck(View):
     
+    template_name = "password_check.html"
+
+    def post(self, request):
+            pass_text = request.POST.get("password", "")
+            
+            if request.user.check_password(pass_text):
+                print("ok")
+            else:
+                print("dame")
+
