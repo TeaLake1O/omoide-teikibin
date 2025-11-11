@@ -49,10 +49,18 @@ class Message(models.Model):
     message_text = models.TextField(verbose_name = "メッセージ内容", null = True, blank = True)
     deleted_at = models.DateTimeField(verbose_name = "削除日時", null = True, blank = True)
     send_at = models.DateTimeField(verbose_name = "送信日時", auto_now_add = True)
-    sender_a = models.BooleanField(verbose_name="送信者がAか", default=True)
+    sender = models.ForeignKey(CustomUser, verbose_name="送信者", on_delete= models.CASCADE)
     
     class Meta:
         verbose_name = "メッセージ"
+        """
+        これできないのひどい
+        constraints = [
+            models.CheckConstraint(
+                check = Q(friendship__user_a = F("sender")) | Q(friendship__user_b = F("sender")),
+                name="friendship_has_sender",
+            ),
+        ]"""
     def __str__(self):
         return f"{self.friendship.user_a}(送信者A)と{self.friendship.user_b}(送信者B)のメッセージ"
 

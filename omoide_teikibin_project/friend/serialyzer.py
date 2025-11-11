@@ -3,12 +3,12 @@ from accounts.models import CustomUser
 from .models import Friendship, Message
 from django.db.models import Q
 
-#user情報のシリアライザ、後でaccountsに移す
-class UserInfSerializer(serializers.ModelSerializer):
+#user情報の汎用シリアライザ
+class MiniUserInfSerializer(serializers.ModelSerializer):
     icon_url = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
-        fields = ["id", "username", "icon_url","nickname", "birthday" ]
+        fields = ["id", "username", "icon_url","nickname" ]
     
     #絶対URL取得用
     def get_icon_url(self, obj):
@@ -18,6 +18,7 @@ class UserInfSerializer(serializers.ModelSerializer):
             return None
         req = self.context.get("request")
         return req.build_absolute_uri(f.url) if req else f.url
+
 
 #フレンド一覧のシリアライザ、フレンドが成立しているときのみ
 class FriendReadSerializer(serializers.ModelSerializer):
@@ -31,8 +32,7 @@ class FriendReadSerializer(serializers.ModelSerializer):
     def get_peer(self, obj):
         me = self.context["request"].user
         other = obj.user_b if obj.user_a_id == me.id else obj.user_a
-        return UserInfSerializer(other, context=self.context).data
-
+        return MiniUserInfSerializer(other, context=self.context).data
 #フレンド申請のシリアライザ、is_request_user_sentを使い申請したユーザを判断する
 class FriendRequestSerializer(serializers.ModelSerializer):
     peer = serializers.SerializerMethodField()
@@ -46,7 +46,7 @@ class FriendRequestSerializer(serializers.ModelSerializer):
     def get_peer(self, obj):
         me = self.context["request"].user
         other = obj.user_b if obj.user_a_id == me.id else obj.user_a
-        return UserInfSerializer(other, context=self.context).data
+        return MiniUserInfSerializer(other, context=self.context).data
     
     #送り手が自信かどうかのフラグ
     def get_is_request_user_sent(self, obj):
@@ -55,7 +55,6 @@ class FriendRequestSerializer(serializers.ModelSerializer):
             return obj.user_a_id == me.id
         else:
             return obj.user_b_id == me.id
-
 #フレンド申請、もしくはフレンド承認のpost用シリアライザ
 class FriendWriteSerializer(serializers.ModelSerializer):
     
@@ -96,6 +95,7 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         )
         return friendship
 
+
 #DM一覧のシリアライザ
 class DMListReadSerializer(serializers.ModelSerializer):
     
@@ -111,13 +111,8 @@ class DMListReadSerializer(serializers.ModelSerializer):
     def get_other(self, obj):
         me = self.context["request"].user
         f = obj.friendship
-        
         other = f.user_a if f.user_b_id == me.id else f.user_b
-        return {
-            "id" : other.id,
-            "username":other.username,
-            "nickname":other.nickname
-        }
+        return MiniUserInfSerializer(other, context=self.context).data
     
     #最後のメッセージを取得
     def get_last_message(self, obj):
@@ -137,3 +132,32 @@ class DMListReadSerializer(serializers.ModelSerializer):
             "message" : msg.message_text,
             "send_at" : msg.send_at
         }
+#DM表示のシリアライザ
+class DMReadSerializer(serializers.ModelSerializer):
+    sender_inf = serializers.SerializerMethodField(read_only = True)
+    
+    class Meta:
+        model = Message
+        fields = ["id", "message_image", "message_text", "send_at", "sender_inf"]
+    
+    #自身が含まれたフレンドテーブルが作成された相手をpeerとする
+    def get_sender_inf(self, obj):
+        return MiniUserInfSerializer(obj.sender, context=self.context).data
+#DM送信用のシリアライザ
+class DMWriteSerializer(serializers.ModelSerializer):
+    message_text = serializers.CharField(write_only = True)
+    message_image = serializers.ImageField(write_only = True)
+    
+    class Meta:
+        model = Message
+        fields = ["message_text", "message_image"]
+
+    def create(self, validated_data):
+        me = self.context["request"].user
+        
+        m = Message.objects.create(
+            sender = me,
+            message_text = validated_data["message_text"],
+            message_image = validated_data["message_image"],
+        )
+        return m

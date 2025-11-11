@@ -5,6 +5,7 @@ from django.db.models import Q
 from rest_framework import permissions, generics
 
 from django.db.models import Subquery, OuterRef
+from django.shortcuts import get_object_or_404
 
 
 #自身のフレンド関係が成立済みのユーザの一覧表示
@@ -25,7 +26,6 @@ class FriendListView(generics.ListAPIView):
             .order_by("-friend_date")
         )
         return f
-
 #自身、もしくは別のユーザのデータを返すget
 class RequestListView(generics.ListAPIView):
     #シリアライザ
@@ -47,14 +47,15 @@ class RequestListView(generics.ListAPIView):
             .order_by("-friend_date")
         )
         return f
-
-#フレンドリクエストを送る。postはシリアライザとか指定するだけでいい
+#フレンドリクエストを送るView。postはシリアライザとか指定するだけでいい
 class FriendRequestView(generics.CreateAPIView):
     #シリアライザ
     serializer_class = FriendWriteSerializer
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
 
+
+#DMのリストを表示するView、相手のiconと最後のメッセージを取得する
 class DMListView(generics.ListAPIView):
     #シリアライザ
     serializer_class = DMListReadSerializer
@@ -65,13 +66,13 @@ class DMListView(generics.ListAPIView):
         #メッセージごとの最新の主キーを取る
         last_msg_id = (
         Message.objects
+        #friendship（外部キー）と一致するfriendship_idを抽出
         .filter(friendship = OuterRef('friendship_id'))
         .order_by('-send_at')
         .values('pk')[:1]
         )
-        #11/10ここを勉強し直す
         user = self.request.user
-        f = (
+        m = (
             Message.objects
             .select_related("friendship", "friendship__user_a", "friendship__user_b")
             .filter(Q(friendship__user_a = user) | Q(friendship__user_b = user))
@@ -80,4 +81,32 @@ class DMListView(generics.ListAPIView):
             .filter(pk = F("last_msg_id"))
             .order_by("-send_at")
         )
-        return f
+        return m
+#DMを表示するView、getで受け取ったusernameと自身のDMを表示する
+class DMView(generics.ListAPIView):
+    #シリアライザ
+    serializer_class = DMReadSerializer
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        other_name = self.kwargs["username"]
+        #userがいないなら404
+        other = get_object_or_404(CustomUser, username = other_name)
+        m = (
+            Message.objects
+            .filter(
+                (Q(friendship__user_a = user) & Q(friendship__user_b = other))|
+                (Q(friendship__user_a = other) & Q(friendship__user_b = user))
+                )
+            .filter(~Q(deleted_at__isnull = False))
+            .order_by("-send_at")
+        )
+        return m
+#メッセージを送るView。
+class DMSendView(generics.CreateAPIView):
+    #シリアライザ
+    serializer_class = DMWriteSerializer
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
