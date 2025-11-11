@@ -72,19 +72,27 @@ class PasswordCheck(FormView):
     # パスワード認証後のリダイレクト先のURLパターン
     success_url = reverse_lazy('accounts:signup_success')
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
+        print(previous_url)
+        next_url = previous_url+'/aaa'
+        print(next_url)
+        
+        context['previous'] = previous_url
+        
+        return context
+    
     
     def form_valid(self, form):
         # 入力を取得
         pass_text = self.request.POST.get("password", "")
         
-        print(self.request.META.get('HTTP_REFERER'))
-        
         # パスワードが正しいかチェック
         if self.request.user.check_password(pass_text):
-            print('ok')
             return super().form_valid(form)
         else:
-            print('dame')
             return super().form_invalid(form)
             
             
