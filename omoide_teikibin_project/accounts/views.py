@@ -35,7 +35,8 @@ class SignUpView(CreateView):
         self.object = user
         # 戻り値はスーパークラスのform_valid()の戻り値(HttpResponseRedirect)
         return super().form_valid(form)
-    
+
+
 class SignUpSuccessView(TemplateView):
     '''サインアップ完了ページのビュー
     '''

@@ -1,14 +1,14 @@
-from django.views.generic import ListView, View, FormView, UpdateView, CreateView
+from friend.models import *
+from friend.serialyzer import *
 
-from .models import Friendship
-from friend.serialyzer import FriendReadSerializer, FriendRequestSerializer, FriendWriteSerializer
-
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework import permissions, generics
 
+from django.db.models import Subquery, OuterRef
+
+
 #自身のフレンド関係が成立済みのユーザの一覧表示
-class FriendView(generics.ListAPIView):
+class FriendListView(generics.ListAPIView):
     #シリアライザ
     serializer_class = FriendReadSerializer
     #未ログインで403を返す
@@ -19,9 +19,9 @@ class FriendView(generics.ListAPIView):
         
         f = (
             Friendship.objects
-            .filter(Q(username_a = user) | Q(username_b = user))
+            .filter(Q(user_a = user) | Q(user_b = user))
             .filter(status = Friendship.Status.ACPT)
-            .select_related("username_a", "username_b")
+            .select_related("user_a", "user_b")
             .order_by("-friend_date")
         )
         return f
@@ -38,12 +38,12 @@ class RequestListView(generics.ListAPIView):
         
         f = (
             Friendship.objects
-            .filter(Q(username_a = user) | Q(username_b = user))
+            .filter(Q(user_a = user) | Q(user_b = user))
             .filter(status__in = [
                 Friendship.Status.A2B,
                 Friendship.Status.B2A,
             ])
-            .select_related("username_a", "username_b")
+            .select_related("user_a", "user_b")
             .order_by("-friend_date")
         )
         return f
@@ -54,3 +54,30 @@ class FriendRequestView(generics.CreateAPIView):
     serializer_class = FriendWriteSerializer
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
+
+class DMListView(generics.ListAPIView):
+    #シリアライザ
+    serializer_class = DMListReadSerializer
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        #メッセージごとの最新の主キーを取る
+        last_msg_id = (
+        Message.objects
+        .filter(friendship = OuterRef('friendship_id'))
+        .order_by('-send_at')
+        .values('pk')[:1]
+        )
+        #11/10ここを勉強し直す
+        user = self.request.user
+        f = (
+            Message.objects
+            .select_related("friendship", "friendship__user_a", "friendship__user_b")
+            .filter(Q(friendship__user_a = user) | Q(friendship__user_b = user))
+            .filter(friendship__status = Friendship.Status.ACPT)
+            .annotate(last_msg_id = Subquery(last_msg_id))
+            .filter(pk = F("last_msg_id"))
+            .order_by("-send_at")
+        )
+        return f

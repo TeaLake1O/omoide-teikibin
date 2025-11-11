@@ -11,8 +11,8 @@ class Friendship(models.Model):
         ACPT = "ACPT", "承認"
     
     friend_id = models.AutoField(primary_key=True,verbose_name="フレンド")
-    username_a = models.ForeignKey(CustomUser,verbose_name="ユーザーA", related_name = "friendship_as_a", on_delete = models.CASCADE)
-    username_b = models.ForeignKey(CustomUser,verbose_name="ユーザーB", related_name = "friendship_as_b", on_delete = models.CASCADE)
+    user_a = models.ForeignKey(CustomUser,verbose_name="ユーザーA", related_name = "friendship_as_a", on_delete = models.CASCADE)
+    user_b = models.ForeignKey(CustomUser,verbose_name="ユーザーB", related_name = "friendship_as_b", on_delete = models.CASCADE)
     
     status = models.CharField(max_length = 4, choices = Status.choices, default = Status.A2B)
     
@@ -27,21 +27,21 @@ class Friendship(models.Model):
             #登録時のチェック
             #Qでとってきたusername_aとF(同一行)のusername_Bを比較して、同じにならないようにチェックする
             models.CheckConstraint(
-                check = ~Q(username_a = F('username_b')),
+                check = ~Q(user_a = F('user_b')),
                 name="friend_a_noteq_b",
             ),
             models.CheckConstraint(
                 #__ltでless thanになる（より小さい）
-                check = Q(username_a__lt = F('username_b')),
+                check = Q(user_a__lt = F('user_b')),
                 name = "combinations_already_exist",
             ),
             models.UniqueConstraint(
-                fields=['username_a', 'username_b'],
+                fields=['user_a', 'user_b'],
                 name="friend_unique",
             )
         ]
     def __str__(self):
-        return f"{self.username_a}と{self.username_b}のフレンド関係"
+        return f"{self.user_a}と{self.user_b}のフレンド関係"
 
 class Message(models.Model):
     friendship = models.ForeignKey(Friendship ,verbose_name = "フレンド", on_delete= models.CASCADE)
@@ -54,5 +54,5 @@ class Message(models.Model):
     class Meta:
         verbose_name = "メッセージ"
     def __str__(self):
-        return f"{self.friendship.username_a}(送信者A)と{self.friendship.username_b}(送信者B)のメッセージ"
+        return f"{self.friendship.user_a}(送信者A)と{self.friendship.user_b}(送信者B)のメッセージ"
 
