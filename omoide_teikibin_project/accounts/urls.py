@@ -38,6 +38,11 @@ urlpatterns = [
     
     # パスワード確認ページのビューの呼び出し
     path('passwordcheck/',
-         views.PasswordCheck.as_view(),
-         name='passwordcheck')
+         views.PasswordCheckView.as_view(),
+         name='passwordcheck'),
+    
+    # ユーザー名変更ページのビューの呼び出し
+    path('<int:pk>/change/username',
+         views.ChangeUsernameView.as_view(),
+         name='change_username'),
 ]

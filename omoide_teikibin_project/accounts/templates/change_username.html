@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>User Info</title>
+  </head>
+
+  <body>
+    <main>
+      <div>
+        <h3>ユーザー名変更</h3>
+        {% if user.is_authenticated %}
+        <p>{{ user.get_username }}でログイン中</p>
+        
+        {% else %}
+        <p>ログインしていません</p>
+        {% endif %}
+      </div>
+    </main>
+  </body>
+
+</html>
