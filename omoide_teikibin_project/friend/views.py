@@ -1,11 +1,11 @@
-from django.views.generic import ListView, View, FormView, UpdateView, CreateView
+from friend.models import *
+from friend.serialyzer import *
 
-from .models import Friendship, Message
-from friend.serialyzer import FriendReadSerializer, FriendRequestSerializer, FriendWriteSerializer
-
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework import permissions, generics
+
+from django.db.models import Subquery, OuterRef
+
 
 #自身のフレンド関係が成立済みのユーザの一覧表示
 class FriendListView(generics.ListAPIView):
@@ -57,18 +57,27 @@ class FriendRequestView(generics.CreateAPIView):
 
 class DMListView(generics.ListAPIView):
     #シリアライザ
-    #serializer_class = FriendReadSerializer
+    serializer_class = DMListReadSerializer
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
+        #メッセージごとの最新の主キーを取る
+        last_msg_id = (
+        Message.objects
+        .filter(friendship = OuterRef('friendship_id'))
+        .order_by('-send_at')
+        .values('pk')[:1]
+        )
+        #11/10ここを勉強し直す
         user = self.request.user
-        
         f = (
             Message.objects
-            .filter(Q(username_a = user) | Q(username_b = user))
-            .filter(status = Friendship.Status.ACPT)
-            .select_related("username_a", "username_b")
-            .order_by("-friend_date")
+            .select_related("friendship", "friendship__username_a", "friendship__username_b")
+            .filter(Q(friendship__username_a = user) | Q(friendship__username_b = user))
+            .filter(friendship__status = Friendship.Status.ACPT)
+            .annotate(last_msg_id=Subquery(last_msg_id))
+            .filter(pk = F("last_msg_id"))
+            .order_by("-send_at")
         )
         return f

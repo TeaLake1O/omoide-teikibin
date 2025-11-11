@@ -6,4 +6,6 @@ urlpatterns = [
     path("", FriendListView.as_view(), name= "friend_view"),
     path("requests/", RequestListView.as_view(), name= "request_view"),
     path("action/", FriendRequestView.as_view(), name= "request_action"),
+    path("message/", DMListView.as_view(), name= "message"),
+    path("message/<str:username>/", FriendRequestView.as_view(), name= "message_view"),
 ]

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.models import CustomUser
-from .models import Friendship
+from .models import Friendship, Message
 from django.db.models import Q
 
 #user情報のシリアライザ、後でaccountsに移す
@@ -96,3 +96,44 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         )
         return friendship
 
+#DM一覧のシリアライザ
+class DMListReadSerializer(serializers.ModelSerializer):
+    
+    message_id = serializers.IntegerField(source="pk", read_only = True)
+    other = serializers.SerializerMethodField(read_only = True)
+    last_message = serializers.SerializerMethodField(read_only = True)
+    
+    class Meta:
+        model = Message
+        fields = ["message_id", "other", "last_message"]
+    
+    #自身が含まれたフレンドテーブルが作成された相手をpeerとする
+    def get_other(self, obj):
+        me = self.context["request"].user
+        f = obj.friendship
+        
+        other = f.username_a if f.username_b_id == me.id else f.username_b
+        return {
+            "id" : other.id,
+            "username":other.username,
+            "nickname":other.nickname
+        }
+    
+    #最後のメッセージを取得
+    def get_last_message(self, obj):
+        me = self.context["request"].user
+        f = obj.friendship
+        
+        msg = (
+            Message.objects
+            .filter(friendship = f)
+            .order_by("-send_at")
+            .first()
+        )
+        print(msg)
+        if not msg or (msg.message_text is None and msg.message_image is None) : return None
+        
+        return {
+            "message" : msg.message_text,
+            "send_at" : msg.send_at
+        }
