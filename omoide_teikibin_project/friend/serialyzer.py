@@ -30,7 +30,7 @@ class FriendReadSerializer(serializers.ModelSerializer):
     #自身が含まれたフレンドテーブルが作成された相手をpeerとする
     def get_peer(self, obj):
         me = self.context["request"].user
-        other = obj.username_b if obj.username_a_id == me.id else obj.username_a
+        other = obj.user_b if obj.user_a_id == me.id else obj.user_a
         return UserInfSerializer(other, context=self.context).data
 
 #フレンド申請のシリアライザ、is_request_user_sentを使い申請したユーザを判断する
@@ -45,16 +45,16 @@ class FriendRequestSerializer(serializers.ModelSerializer):
     #自身が含まれたフレンドテーブルが作成された相手をpeerとする
     def get_peer(self, obj):
         me = self.context["request"].user
-        other = obj.username_b if obj.username_a_id == me.id else obj.username_a
+        other = obj.user_b if obj.user_a_id == me.id else obj.user_a
         return UserInfSerializer(other, context=self.context).data
     
     #送り手が自信かどうかのフラグ
     def get_is_request_user_sent(self, obj):
         me = self.context["request"].user
         if obj.status == Friendship.Status.A2B:
-            return obj.username_a_id == me.id
+            return obj.user_a_id == me.id
         else:
-            return obj.username_b_id == me.id
+            return obj.user_b_id == me.id
 
 #フレンド申請、もしくはフレンド承認のpost用シリアライザ
 class FriendWriteSerializer(serializers.ModelSerializer):
@@ -75,8 +75,8 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         is_positive = validated_data["is_positive"]
 
         friendship = Friendship.objects.filter(
-            Q(username_a = me, username_b = other) |
-            Q(username_a = other, username_b = me)
+            Q(user_a = me, user_b = other) |
+            Q(user_a = other, user_b = me)
         ).first()
         #FriendShipに関係がすでにあった場合
         if friendship:
@@ -90,8 +90,8 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         
         #まだ関係がつくられていないならデータを作ってreturn
         friendship = Friendship.objects.create(
-            username_a = me,
-            username_b = other,
+            user_a = me,
+            user_b = other,
             status = "A2B"
         )
         return friendship
@@ -112,7 +112,7 @@ class DMListReadSerializer(serializers.ModelSerializer):
         me = self.context["request"].user
         f = obj.friendship
         
-        other = f.username_a if f.username_b_id == me.id else f.username_b
+        other = f.user_a if f.user_b_id == me.id else f.user_b
         return {
             "id" : other.id,
             "username":other.username,

@@ -132,7 +132,7 @@ def join_group(request, pk):
 
 @login_required
 def leave_group(request, pk):
-  
+
     group = get_object_or_404(Group, pk=pk)
     
     # 参加記録のleft_atフィールドを更新して退会日時を設定
@@ -161,7 +161,7 @@ class PostCreatePageView(LoginRequiredMixin, CreateView):
             left_at__isnull=True
         ).exclude(member=self.request.user)
         
-        notification_message = f"{self.request.user.username}
+        notification_message = f"{self.request.user.username}"
         
         notifications = []
         for member_obj in members_to_notify:
@@ -172,7 +172,7 @@ class PostCreatePageView(LoginRequiredMixin, CreateView):
                     notification_message=notification_message,
                     Group=group,
                     title="Bài đăng mới"
-                   
+                
                 )
             )
         

@@ -19,9 +19,9 @@ class FriendListView(generics.ListAPIView):
         
         f = (
             Friendship.objects
-            .filter(Q(username_a = user) | Q(username_b = user))
+            .filter(Q(user_a = user) | Q(user_b = user))
             .filter(status = Friendship.Status.ACPT)
-            .select_related("username_a", "username_b")
+            .select_related("user_a", "user_b")
             .order_by("-friend_date")
         )
         return f
@@ -38,12 +38,12 @@ class RequestListView(generics.ListAPIView):
         
         f = (
             Friendship.objects
-            .filter(Q(username_a = user) | Q(username_b = user))
+            .filter(Q(user_a = user) | Q(user_b = user))
             .filter(status__in = [
                 Friendship.Status.A2B,
                 Friendship.Status.B2A,
             ])
-            .select_related("username_a", "username_b")
+            .select_related("user_a", "user_b")
             .order_by("-friend_date")
         )
         return f
@@ -73,10 +73,10 @@ class DMListView(generics.ListAPIView):
         user = self.request.user
         f = (
             Message.objects
-            .select_related("friendship", "friendship__username_a", "friendship__username_b")
-            .filter(Q(friendship__username_a = user) | Q(friendship__username_b = user))
+            .select_related("friendship", "friendship__user_a", "friendship__user_b")
+            .filter(Q(friendship__user_a = user) | Q(friendship__user_b = user))
             .filter(friendship__status = Friendship.Status.ACPT)
-            .annotate(last_msg_id=Subquery(last_msg_id))
+            .annotate(last_msg_id = Subquery(last_msg_id))
             .filter(pk = F("last_msg_id"))
             .order_by("-send_at")
         )
