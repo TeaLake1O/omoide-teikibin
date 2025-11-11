@@ -21,4 +21,5 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class PasswordCheckForm(forms.Form):
+    # 伏字のパスワード入力フォーム
     password = forms.CharField(label='パスワード', widget=forms.PasswordInput(), min_length=8)
