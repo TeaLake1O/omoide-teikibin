@@ -22,6 +22,7 @@ class FriendListView(generics.ListAPIView):
             Friendship.objects
             .filter(Q(user_a = user) | Q(user_b = user))
             .filter(status = Friendship.Status.ACPT)
+            .filter(deleted_at__isnull = True)
             .select_related("user_a", "user_b")
             .order_by("-friend_date")
         )
@@ -53,6 +54,8 @@ class FriendRequestView(generics.CreateAPIView):
     serializer_class = FriendWriteSerializer
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
+    #validationerrorのときこれがないとエラーが出る
+    queryset = Friendship.objects.none() 
 
 
 #DMのリストを表示するView、相手のiconと最後のメッセージを取得する
@@ -65,16 +68,18 @@ class DMListView(generics.ListAPIView):
     def get_queryset(self):
         #メッセージごとの最新の主キーを取る
         last_msg_id = (
-        Message.objects
-        #friendship（外部キー）と一致するfriendship_idを抽出
-        .filter(friendship = OuterRef('friendship_id'))
-        .order_by('-send_at')
-        .values('pk')[:1]
+            Message.objects
+            #friendship（外部キー）と一致するfriendship_idを抽出
+            .filter(friendship = OuterRef('friendship_id'))
+            .filter(deleted_at__isnull = True)
+            .order_by('-send_at')
+            .values('pk')[:1]
         )
+        
         user = self.request.user
         m = (
             Message.objects
-            .select_related("friendship", "friendship__user_a", "friendship__user_b")
+            .select_related("friendship", "friendship__user_a", "friendship__user_b", "sender")
             .filter(Q(friendship__user_a = user) | Q(friendship__user_b = user))
             .filter(friendship__status = Friendship.Status.ACPT)
             .annotate(last_msg_id = Subquery(last_msg_id))
@@ -100,6 +105,7 @@ class DMView(generics.ListAPIView):
                 (Q(friendship__user_a = user) & Q(friendship__user_b = other))|
                 (Q(friendship__user_a = other) & Q(friendship__user_b = user))
                 )
+            .select_related("friendship")
             .filter(~Q(deleted_at__isnull = False))
             .order_by("-send_at")
         )

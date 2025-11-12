@@ -95,9 +95,6 @@ class PasswordCheck(FormView):
             return super().form_valid(form)
         else:
             return super().form_invalid(form)
-            
-            
-            
     
 # class PasswordCheck(TemplateView):
 #     '''パスワード確認ページのビュー

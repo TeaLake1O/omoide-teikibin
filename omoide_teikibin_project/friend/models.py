@@ -19,6 +19,8 @@ class Friendship(models.Model):
     created_at = models.DateTimeField(auto_now_add = True, verbose_name="作成日時")
     friend_date = models.DateTimeField(null = True, blank = True, verbose_name = "フレンド成立日")
     
+    deleted_at = models.DateTimeField(null = True, blank = True, verbose_name = "フレンド解消日")
+    
     #Metaはdbの制約を決定する
     class Meta:
         verbose_name = "フレンド"
@@ -63,4 +65,3 @@ class Message(models.Model):
         ]"""
     def __str__(self):
         return f"{self.friendship.user_a}(送信者A)と{self.friendship.user_b}(送信者B)のメッセージ"
-

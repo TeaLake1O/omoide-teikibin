@@ -2,6 +2,7 @@ from rest_framework import serializers
 from accounts.models import CustomUser
 from .models import Friendship, Message
 from django.db.models import Q
+from django.utils import timezone
 
 #user情報の汎用シリアライザ
 class MiniUserInfSerializer(serializers.ModelSerializer):
@@ -18,18 +19,23 @@ class MiniUserInfSerializer(serializers.ModelSerializer):
             return None
         req = self.context.get("request")
         return req.build_absolute_uri(f.url) if req else f.url
+#user情報の汎用シリアライザ、こっちはnicknameとusernameだけ
+class MiniUserInfNameOnlySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["id", "username", "nickname" ]
 
 
 #フレンド一覧のシリアライザ、フレンドが成立しているときのみ
 class FriendReadSerializer(serializers.ModelSerializer):
-    peer = serializers.SerializerMethodField()
+    other = serializers.SerializerMethodField()
     
     class Meta:
         model = Friendship
-        fields = ["friend_id", "status", "friend_date", "peer"]
+        fields = ["friend_id", "status", "friend_date", "other"]
     
     #自身が含まれたフレンドテーブルが作成された相手をpeerとする
-    def get_peer(self, obj):
+    def get_other(self, obj):
         me = self.context["request"].user
         other = obj.user_b if obj.user_a_id == me.id else obj.user_a
         return MiniUserInfSerializer(other, context=self.context).data
@@ -77,14 +83,32 @@ class FriendWriteSerializer(serializers.ModelSerializer):
             Q(user_a = me, user_b = other) |
             Q(user_a = other, user_b = me)
         ).first()
-        #FriendShipに関係がすでにあった場合
+        
+        #friendShipに関係がすでにあった場合
         if friendship:
+            #ポジティブがTrueの場合、friendShipの有無をすでに判定しているため、承認をさす(ソフトデリートは除く)
             if is_positive:
-                friendship.status = Friendship.Status.ACPT
-                friendship.save(update_fields = ["status"])
-                return friendship
+                #friendテーブルがソフトデリートサれていた場合、statusを変えてソフトデリートを解除
+                if friendship.deleted_at is not None:
+                    friendship.status = Friendship.Status.A2B if friendship.user_a_id == me.id else Friendship.Status.B2A
+                    friendship.deleted_at = None
+                    friendship.save(update_fields = ["status", "deleted_at"])
+                    return friendship
+                #自身が承認を行える場合、承認する
+                elif (friendship.status == Friendship.Status.A2B and friendship.user_b_id == me.id) or (friendship.status == Friendship.Status.B2A and friendship.user_a_id == me.id):
+                    friendship.status = Friendship.Status.ACPT
+                    friendship.save(update_fields = ["status"])
+                    return friendship
+                #すでにフレンドの場合
+                elif friendship.status == Friendship.Status.ACPT:
+                    raise serializers.ValidationError("既にフレンドです")
+                #自身が承認を行えない場合
+                else:
+                    raise serializers.ValidationError("承認は相手ユーザのみ行えます")
+            #is_positiveがfalse、つまりフレンド関係の解消や申請の拒否の場合、ソフトデリートする
             else:
-                friendship.delete()
+                friendship.deleted_at = timezone.now()
+                friendship.save(update_fields = ["deleted_at"])
                 return friendship
         
         #まだ関係がつくられていないならデータを作ってreturn
@@ -101,11 +125,13 @@ class DMListReadSerializer(serializers.ModelSerializer):
     
     message_id = serializers.IntegerField(source="pk", read_only = True)
     other = serializers.SerializerMethodField(read_only = True)
-    last_message = serializers.SerializerMethodField(read_only = True)
+    sender_id = serializers.IntegerField(source="sender.id", read_only=True)
+    sender_username = serializers.CharField(source="sender.username", read_only=True)
+    sender_nickname = serializers.CharField(source="sender.nickname", read_only=True)
     
     class Meta:
         model = Message
-        fields = ["message_id", "other", "last_message"]
+        fields = ["message_id", "other", "message_text", "send_at", "sender_id", "sender_username", "sender_nickname"]
     
     #自身が含まれたフレンドテーブルが作成された相手をpeerとする
     def get_other(self, obj):
@@ -113,38 +139,24 @@ class DMListReadSerializer(serializers.ModelSerializer):
         f = obj.friendship
         other = f.user_a if f.user_b_id == me.id else f.user_b
         return MiniUserInfSerializer(other, context=self.context).data
-    
-    #最後のメッセージを取得
-    def get_last_message(self, obj):
-        me = self.context["request"].user
-        f = obj.friendship
-        
-        msg = (
-            Message.objects
-            .filter(friendship = f)
-            .order_by("-send_at")
-            .first()
-        )
-        print(msg)
-        if not msg or (msg.message_text is None and msg.message_image is None) : return None
-        
-        return {
-            "message" : msg.message_text,
-            "send_at" : msg.send_at
-        }
+
 #DM表示のシリアライザ
 class DMReadSerializer(serializers.ModelSerializer):
     sender_inf = serializers.SerializerMethodField(read_only = True)
-    
+    friendship_id = serializers.IntegerField(read_only=True)
     class Meta:
         model = Message
-        fields = ["id", "message_image", "message_text", "send_at", "sender_inf"]
+        fields = ["id", "message_image", "message_text", "send_at", "sender_inf", "friendship_id"]
     
     #自身が含まれたフレンドテーブルが作成された相手をpeerとする
     def get_sender_inf(self, obj):
         return MiniUserInfSerializer(obj.sender, context=self.context).data
+
+#11/11ここからやる、その前にpostの単体テスト計画書を作成
 #DM送信用のシリアライザ
 class DMWriteSerializer(serializers.ModelSerializer):
+    
+    #friendship_id = serializers.PrimaryKeyRelatedField(write_only = True)
     message_text = serializers.CharField(write_only = True)
     message_image = serializers.ImageField(write_only = True)
     
@@ -159,5 +171,6 @@ class DMWriteSerializer(serializers.ModelSerializer):
             sender = me,
             message_text = validated_data["message_text"],
             message_image = validated_data["message_image"],
+            friendship = validated_data["friendship"]
         )
         return m
