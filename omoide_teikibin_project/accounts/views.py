@@ -58,8 +58,10 @@ class UserInfoView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if 'cu' in self.request.session:
-            print(self.request.session['cu'])
+        # 不要なsessionの更新
+        if 'change' in self.request.session:
+            self.request.session['change'] = '0'
+            print(self.request.session['change'])
         return context
     
 class PasswordCheckView(FormView):
@@ -71,23 +73,34 @@ class PasswordCheckView(FormView):
     form_class = PasswordCheckForm
     # パスワード認証後のリダイレクト先のURLパターン
     def get_success_url(self):
-        if 'cu' in self.request.session:
-            next_url = 'accounts:change_username'
-            del self.request.session['cu']
-        else:
-            next_url = 'accounts:userinfo'
+        # session内容からURLを分岐
+        if 'change' in self.request.session:
+            # ユーザー名変更ページへ
+            if self.request.session['change'] == 'username':
+                next_url = 'accounts:change_username'
+            # パスワード変更ページへ
+            elif self.request.session['change'] == 'password':
+                next_url = 'accounts:userinfo'
+            # email変更ページへ
+            elif self.request.session['change'] == 'email':
+                next_url = 'accounts:userinfo'
+            else:
+                next_url = 'accounts:userinfo'
+            del self.request.session['change']
         return reverse_lazy(next_url, kwargs={'pk': self.request.user.pk})
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
+        # ボタン押下時、session更新
         if self.request.method == 'POST':
-            # print(self.request.GET)
-            # print(self.request.POST)
             if "change_username" in self.request.POST:
-                self.request.session['cu'] = '1'
-                print('change_un')
-        
+                self.request.session['change'] = 'username'
+            elif "change_password" in self.request.POST:
+                self.request.session['change'] = 'password'
+            elif "change_email" in self.request.POST:
+                self.request.session['change'] = 'email'
+            print(self.request.session['change'])
         
         # 前のページのURL(ユーザー情報ページ)
         previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
