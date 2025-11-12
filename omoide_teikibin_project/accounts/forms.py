@@ -1,4 +1,4 @@
-from django.forms import ModelForm
+from django import forms
 # UserCreationFormクラスをインポート
 from django.contrib.auth.forms import UserCreationForm
 # models.pyで定義したカスタムUserモデルをインポート
@@ -20,10 +20,6 @@ class CustomUserCreationForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2')
 
 
-class PasswordCheckForm(ModelForm):
-    class Meta:
-        # 連携するUserモデルを設定
-        model = CustomUser
-    
-        # フォームで使用するフィールドを設定
-        fields = ('password',)
+class PasswordCheckForm(forms.Form):
+    # 伏字のパスワード入力フォーム
+    password = forms.CharField(label='パスワード', widget=forms.PasswordInput(), min_length=8)
