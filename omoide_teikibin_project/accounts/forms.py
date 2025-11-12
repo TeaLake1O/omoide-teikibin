@@ -19,7 +19,7 @@ class CustomUserCreationForm(UserCreationForm):
         # ユーザー名、メールアドレス、パスワード、パスワード(確認用)
         fields = ('username', 'email', 'password1', 'password2')
 
-
 class PasswordCheckForm(forms.Form):
-    # 伏字のパスワード入力フォーム
+    '''パスワード入力フォーム(伏字)
+    '''
     password = forms.CharField(label='パスワード', widget=forms.PasswordInput(), min_length=8)
