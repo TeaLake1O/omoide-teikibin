@@ -14,13 +14,14 @@ from rest_framework.permissions import IsAuthenticated
 
 # Local imports
 from .serializers import PostSerializer
-from .models import Post, Group, Member, Notification
+from .models import Post, Group, Member
 from .forms import PostCreationForm, GroupCreationForm
 
-# ===== Page Rendering Views (Giữ nguyên) =====
+# ===== HOMEPAGE =====
 def homepage(request):
     return render(request, 'homepage.html')
 
+# ===== PAGE VIEWS =====
 @login_required
 def post_list_page(request):
     return render(request, 'post_list.html')
@@ -30,8 +31,23 @@ def post_detail_page(request, post_id): # Note: This is redefined later, but let
     post = get_object_or_404(Post, post_id=post_id)
     return render(request, 'post_detail.html', {'post': post})
 
+class PostListView(LoginRequiredMixin, ListView):
+    model = Post
+    template_name = 'post_list.html' 
+    context_object_name = 'posts' 
+    
+class PostCreatePageView(LoginRequiredMixin, CreateView):
+    """投稿作成ページビュー"""
+    model = Post
+    form_class = PostCreationForm
+    template_name = 'create_post.html'
+    success_url = reverse_lazy('post:post_list_page')
 
-# ===== API Views (Dùng DRF) =====
+    def form_valid(self, form):
+        form.instance.post_user = self.request.user
+        return super().form_valid(form)    
+
+# ===== API Views  =====
 
 # 1. API LIST
 class PostListAPIView(ListAPIView):
@@ -55,12 +71,9 @@ class PostCreateAPIView(CreateAPIView):
 
 # ===== Class-Based Views for Page Rendering =====
 
-class PostListView(LoginRequiredMixin, ListView):
-    model = Post
-    template_name = 'post_list.html' 
-    context_object_name = 'posts' 
 
 # --- Group Views ---
+
 
 class GroupListView(LoginRequiredMixin, ListView):
     """全部のグループを表示するビュー"""
@@ -106,7 +119,7 @@ class GroupCreateView(LoginRequiredMixin, CreateView):
         Member.objects.create(
             member=self.request.user,
             group=self.object,
-            role=True # Giả sử người tạo là admin (role=True)
+            role=True # 管理者権限
         )
         #移動先のURLにリダイレクト
         return redirect(self.get_success_url())
@@ -115,7 +128,7 @@ class GroupCreateView(LoginRequiredMixin, CreateView):
         # 移動先のURLをグループ詳細ページに設定
         return reverse_lazy('post:group_detail', kwargs={'pk': self.object.pk})
 
-# --- Logic Tham gia/Rời nhóm ---
+# --- グループ参加・退会ビュー ---
 
 @login_required
 def join_group(request, pk):
@@ -139,65 +152,3 @@ def leave_group(request, pk):
     Member.objects.filter(group=group, member=request.user).update(left_at=timezone.now())
     return redirect('post:group_detail', pk=pk)
 
-
-class PostCreatePageView(LoginRequiredMixin, CreateView):
-    model = Post
-    form_class = PostCreationForm
-    template_name = 'create_post.html'
-    success_url = reverse_lazy('post:post_list_page')
-
-    def form_valid(self, form):
-        form.instance.post_user = self.request.user
-    
-        
-        response = super().form_valid(form) 
-        
-        new_post = self.object
-        group = new_post.group
-        
-    
-        members_to_notify = Member.objects.filter(
-            group=group, 
-            left_at__isnull=True
-        ).exclude(member=self.request.user)
-        
-        notification_message = f"{self.request.user.username}"
-        
-        notifications = []
-        for member_obj in members_to_notify:
-            notifications.append(
-                Notification(
-                    username=member_obj.member, 
-                    notification_status="New Post",
-                    notification_message=notification_message,
-                    Group=group,
-                    title="Bài đăng mới"
-                
-                )
-            )
-        
-        if notifications:
-            Notification.objects.bulk_create(notifications)
-
-            
-        return response
-
-class NotificationListView(LoginRequiredMixin, ListView):
-    model = Notification
-    template_name = 'notification_list.html'
-    context_object_name = 'notifications'
-
-    def get_queryset(self):
-        return Notification.objects.filter(
-            username=self.request.user, 
-            is_read=False
-        ).order_by('-created_at')
-
-@login_required
-def mark_notification_as_read(request, pk):
-    notification = get_object_or_404(Notification, pk=pk, username=request.user)
-    notification.is_read = True
-    notification.save()
-    
-
-    return redirect('post:notification_list')
