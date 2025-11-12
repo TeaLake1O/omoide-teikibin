@@ -82,7 +82,7 @@ class PasswordCheckView(FormView):
                 next_url = 'accounts:userinfo'
             # email変更ページへ
             elif self.request.session['change'] == 'email':
-                next_url = 'accounts:userinfo'
+                next_url = 'accounts:change_email'
             else:
                 next_url = 'accounts:userinfo'
             del self.request.session['change']
@@ -137,4 +137,22 @@ class ChangeUsernameView(UpdateView):
         # contextに設定
         context['previous'] = previous_url
         return context
+
+class ChangeEmailView(UpdateView):
+    '''email変更ページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'change_username.html'
+    model = CustomUser
+    fields = ('email',)
+    # パスワード認証後のリダイレクト先のURLパターン
+    def get_success_url(self):
+        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # 前のページのURL(ユーザー情報ページ)
+        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
+        # contextに設定
+        context['previous'] = previous_url
+        return context

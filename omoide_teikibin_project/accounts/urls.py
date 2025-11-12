@@ -45,4 +45,9 @@ urlpatterns = [
     path('<int:pk>/change/username',
          views.ChangeUsernameView.as_view(),
          name='change_username'),
+    
+    # email変更ページのビューの呼び出し
+    path('<int:pk>/change/email',
+         views.ChangeEmailView.as_view(),
+         name='change_email'),
 ]
