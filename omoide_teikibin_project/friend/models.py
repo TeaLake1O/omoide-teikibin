@@ -2,6 +2,17 @@ from django.db import models
 
 from accounts.models import CustomUser
 from django.db.models import Q,F
+import uuid
+from django.utils import timezone
+
+#uploadtoにわたす用の関数、instanceがmodelのデータとしてくる
+def gen_image_path_message(instance, filename):
+    #拡張子を保持しつつ名前を変更
+    ext = filename.split('.')[-1].lower()
+    newname = f"{uuid.uuid4().hex}.{ext}"
+    return f"users/{instance.friendship_id}/{timezone.now():%Y/%m/%d}/{newname}"
+
+
 
 class Friendship(models.Model):
     
@@ -47,7 +58,7 @@ class Friendship(models.Model):
 
 class Message(models.Model):
     friendship = models.ForeignKey(Friendship ,verbose_name = "フレンド", on_delete= models.CASCADE)
-    message_image = models.ImageField(verbose_name = "メッセージ画像",null = True, blank = True)
+    message_image = models.ImageField(verbose_name = "メッセージ画像",null = True, blank = True, upload_to = gen_image_path_message)
     message_text = models.TextField(verbose_name = "メッセージ内容", null = True, blank = True)
     deleted_at = models.DateTimeField(verbose_name = "削除日時", null = True, blank = True)
     send_at = models.DateTimeField(verbose_name = "送信日時", auto_now_add = True)

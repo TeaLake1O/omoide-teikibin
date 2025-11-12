@@ -3,6 +3,7 @@ from accounts.models import CustomUser
 from .models import Friendship, Message
 from django.db.models import Q
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 #user情報の汎用シリアライザ
 class MiniUserInfSerializer(serializers.ModelSerializer):
@@ -152,25 +153,44 @@ class DMReadSerializer(serializers.ModelSerializer):
     def get_sender_inf(self, obj):
         return MiniUserInfSerializer(obj.sender, context=self.context).data
 
-#11/11ここからやる、その前にpostの単体テスト計画書を作成
 #DM送信用のシリアライザ
 class DMWriteSerializer(serializers.ModelSerializer):
     
-    #friendship_id = serializers.PrimaryKeyRelatedField(write_only = True)
-    message_text = serializers.CharField(write_only = True)
-    message_image = serializers.ImageField(write_only = True)
+    friendship_id = serializers.PrimaryKeyRelatedField(source = "friendship", queryset = Friendship.objects.all() , write_only = True)
+    message_text = serializers.CharField(required = True, allow_blank = True, write_only = True)
+    message_image = serializers.ImageField(required = True, allow_null = True, write_only = True)
     
     class Meta:
         model = Message
-        fields = ["message_text", "message_image"]
+        fields = ["friendship_id", "message_text", "message_image"]
+    #バリデーション
+    def validate(self, attrs):
+        me = self.context["request"].user
+        fs = attrs.get("friendship")
+        image = attrs.get("message_image")
+        text = attrs.get("message_text")
+        
+        #フレンドシップに自身が入っていなかったら
+        if me.id not in (fs.user_a_id, fs.user_b_id):
+            raise serializers.ValidationError("このメッセージを送信する権限がありません")
+        
+        #フレンド関係が成立していなかったら
+        if fs.status != Friendship.Status.ACPT or fs.deleted_at is not None:
+            raise serializers.ValidationError("このメッセージを送信する権限がありません")
+        
+        #もしimageとtextの両方が空だったら
+        if image is None and (text.strip() == "" or text is None):
+            raise serializers.ValidationError("テキストか画像のどちらかのデータが必要です")
+        elif text is not None and  text.strip() == "":
+            attrs["message_text"] = None
+        
+        return attrs
 
     def create(self, validated_data):
         me = self.context["request"].user
         
         m = Message.objects.create(
             sender = me,
-            message_text = validated_data["message_text"],
-            message_image = validated_data["message_image"],
-            friendship = validated_data["friendship"]
+            **validated_data
         )
         return m
