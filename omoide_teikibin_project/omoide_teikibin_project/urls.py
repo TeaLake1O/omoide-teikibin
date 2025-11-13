@@ -28,5 +28,6 @@ urlpatterns = [
     
     path('', IndexView.as_view() , name='index'),
     path("api/friend/", include("friend.urls")),
+    path("api/post/", include("post.urls")),
     #開発時のみ、メディアURL用
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

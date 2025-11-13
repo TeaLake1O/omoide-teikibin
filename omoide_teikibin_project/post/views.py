@@ -1,3 +1,6 @@
+from django.db.models import Exists, OuterRef
+from post.serializers import *
+
 # post/views.py 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -6,7 +9,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView
-import json
+
 
 # Import các thư viện DRF cần thiết
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
@@ -16,6 +19,41 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import PostSerializer
 from .models import Post, Group, Member
 from .forms import PostCreationForm, GroupCreationForm
+
+from django.db.models import Q
+from rest_framework import permissions, generics
+
+class HomePageView(generics.ListAPIView):
+    #シリアライザ
+    serializer_class = HomePageReadSerializer
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        
+        me = self.request.user
+        
+        #Memberのサブクエリ、memberでの条件や、OuterRefで親から引き渡されたgroup_idとgroupを比較してフィルターする
+        member = Member.objects.filter(
+            member_id = me.id,
+            left_at__isnull = True,
+            group = OuterRef("group_id")
+        )
+        
+        MAX_GET_POST = 5
+        
+        #migrationする
+        f = (
+            Post.objects
+            .filter(parent_post__isnull = True)
+            .filter(deleted_at__isnull = True)
+            #annotateは各行に計算済みのデータを作る行、この場合、memberがTrueかをmember_flgにいれてfilterしている
+            .annotate(member_flg = Exists(member))
+            .filter(member_flg = True)
+            .select_related("group", "post_user")
+            .order_by("-created_at")[:MAX_GET_POST]
+        )
+        return f
 
 # ===== HOMEPAGE =====
 def homepage(request):
