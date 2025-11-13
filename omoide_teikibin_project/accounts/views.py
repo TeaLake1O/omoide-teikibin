@@ -104,12 +104,6 @@ class PasswordCheckView(FormView):
                 self.request.session['change'] = 'delete'
             print(self.request.session['change'])
         
-        # 前のページのURL(ユーザー情報ページ)
-        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
-        
-        # contextに設定
-        context['previous'] = previous_url
-        
         return context
     
     def form_valid(self, form):
@@ -132,14 +126,6 @@ class ChangeUsernameView(UpdateView):
     # 完了ボタン押下後のリダイレクト先のURLパターン
     def get_success_url(self):
         return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # 前のページのURL(ユーザー情報ページ)
-        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
-        # contextに設定
-        context['previous'] = previous_url
-        return context
 
 class ChangePasswordView(PasswordChangeView):
     '''パスワード変更ページのビュー
@@ -170,11 +156,3 @@ class ChangeEmailView(UpdateView):
     # 完了ボタン押下後のリダイレクト先のURLパターン
     def get_success_url(self):
         return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # 前のページのURL(ユーザー情報ページ)
-        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
-        # contextに設定
-        context['previous'] = previous_url
-        return context
