@@ -10,7 +10,7 @@ def gen_image_path_message(instance, filename):
     #拡張子を保持しつつ名前を変更
     ext = filename.split('.')[-1].lower()
     newname = f"{uuid.uuid4().hex}.{ext}"
-    return f"users/{instance.friendship_id}/{timezone.now():%Y/%m/%d}/{newname}"
+    return f"users/{instance.friendship}/{instance.friendship_id}/{timezone.now():%Y/%m/%d}/{newname}"
 
 
 
