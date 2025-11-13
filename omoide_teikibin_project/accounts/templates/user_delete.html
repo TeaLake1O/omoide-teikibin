@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>User Info</title>
+  </head>
+
+  <body>
+    <main>
+      <div>
+        <h3>アカウント削除</h3>
+        {% if user.is_authenticated %}
+        <p>{{ user.get_username }}でログイン中</p>
+          {% if step == 1 %}
+            <h4>このアカウントを削除しますか？</h4>
+            <h2>アカウント削除の確認</h2>
+            <p>この操作は取り消せません。本当に削除しますか？</p>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit">はい、削除を続行</button>
+              <a href="{{ cancel_url }}">キャンセル</a>
+            </form>
+          {% elif step == 2 %}
+            <h2>最終確認</h2>
+            <p><strong>本当に本当に削除しますか？</strong></p>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit">完全に削除する</button>
+              <a href="{{ cancel_url }}">やめる</a>
+            </form>
+
+          {% elif step == 3 %}
+              <h2>削除が完了しました</h2>
+              <p>ご利用ありがとうございました。</p>
+              <a href="{% url 'index' %}">ログインページへ戻る</a>
+          {% endif %}
+
+        {% else %}
+        <p>ログインしていません</p>
+        {% endif %}
+      </div>
+    </main>
+  </body>
+
+</html>

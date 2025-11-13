@@ -3,7 +3,7 @@ from django.views.generic import TemplateView, DetailView, CreateView, FormView,
 from .models import CustomUser
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from .forms import CustomUserCreationForm, PasswordCheckForm
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 class SignUpView(CreateView):
     '''サインアップページのビュー
@@ -62,6 +62,9 @@ class UserInfoView(DetailView):
         if 'change' in self.request.session:
             self.request.session['change'] = '0'
             print(self.request.session['change'])
+        if 'delete_step' in self.request.session:
+            self.request.session['delete_step'] = 1
+            print(self.request.session['delete_step'])
         return context
     
 class PasswordCheckView(FormView):
@@ -84,6 +87,9 @@ class PasswordCheckView(FormView):
             # email変更ページへ
             elif self.request.session['change'] == 'email':
                 next_url = 'accounts:change_email'
+            # アカウント削除ページへ
+            elif self.request.session['change'] == 'user_delete':
+                next_url = 'accounts:user_delete'
             else:
                 next_url = 'accounts:userinfo'
             del self.request.session['change']
@@ -101,7 +107,7 @@ class PasswordCheckView(FormView):
             elif 'change_email' in self.request.POST:
                 self.request.session['change'] = 'email'
             elif 'delete' in self.request.POST:
-                self.request.session['change'] = 'delete'
+                self.request.session['change'] = 'user_delete'
             print(self.request.session['change'])
         
         return context
@@ -137,14 +143,6 @@ class ChangePasswordView(PasswordChangeView):
     def get_success_url(self):
         return reverse_lazy('accounts:change_password_done', kwargs={'pk': self.request.user.pk})
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs) # 継承元のメソッドCALL
-        # 前のページのURL(ユーザー情報ページ)
-        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
-        # contextに設定
-        context['previous'] = previous_url
-        context["form_name"] = "password_change"
-        return context
 
 class ChangePasswordDoneView(PasswordChangeDoneView):
     '''パスワード変更完了ページのビュー
@@ -161,3 +159,33 @@ class ChangeEmailView(UpdateView):
     # 完了ボタン押下後のリダイレクト先のURLパターン
     def get_success_url(self):
         return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
+
+class UserDeleteView(TemplateView):
+    '''アカウント削除ページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'user_delete.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        print('session', self.request.session['delete_step'])
+        # contextに設定
+        context['step'] = self.request.session.get('delete_step', 1)
+        context['cancel_url'] = reverse('accounts:userinfo', args=[self.request.user.pk])
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        """削除確認フローの制御"""
+        step = request.session.get('delete_step', 1)
+        print(0)
+        if step == 1:
+            # 最初の確認後 → 2回目の確認画面へ
+            request.session['delete_step'] = 2
+            print('session', self.request.session['delete_step'])
+            return self.get(request, *args, **kwargs)
+
+        elif step == 2:
+            # 最終確認後 → 削除実行
+            request.session['delete_step'] = 3
+            print('session', self.request.session['delete_step'])
+            return self.get(request, *args, **kwargs)
