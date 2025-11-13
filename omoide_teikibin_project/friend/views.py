@@ -18,7 +18,7 @@ class FriendListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         
-        f = (
+        result = (
             Friendship.objects
             .filter(Q(user_a = user) | Q(user_b = user))
             .filter(status = Friendship.Status.ACPT)
@@ -26,7 +26,7 @@ class FriendListView(generics.ListAPIView):
             .select_related("user_a", "user_b")
             .order_by("-friend_date")
         )
-        return f
+        return result
 #自身、もしくは別のユーザのデータを返すget
 class RequestListView(generics.ListAPIView):
     #シリアライザ
@@ -37,7 +37,7 @@ class RequestListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         
-        f = (
+        result = (
             Friendship.objects
             .filter(Q(user_a = user) | Q(user_b = user))
             .filter(status__in = [
@@ -47,7 +47,7 @@ class RequestListView(generics.ListAPIView):
             .select_related("user_a", "user_b")
             .order_by("-friend_date")
         )
-        return f
+        return result
 #フレンドリクエストを送るView。postはシリアライザとか指定するだけでいい
 class FriendRequestView(generics.CreateAPIView):
     #シリアライザ
@@ -77,7 +77,7 @@ class DMListView(generics.ListAPIView):
         )
         
         user = self.request.user
-        m = (
+        result = (
             Message.objects
             .select_related("friendship", "friendship__user_a", "friendship__user_b", "sender")
             .filter(Q(friendship__user_a = user) | Q(friendship__user_b = user))
@@ -86,7 +86,7 @@ class DMListView(generics.ListAPIView):
             .filter(pk = F("last_msg_id"))
             .order_by("-send_at")
         )
-        return m
+        return result
 #DMを表示するView、getで受け取ったusernameと自身のDMを表示する
 class DMView(generics.ListAPIView):
     #シリアライザ
@@ -99,7 +99,7 @@ class DMView(generics.ListAPIView):
         other_name = self.kwargs["username"]
         #userがいないなら404
         other = get_object_or_404(CustomUser, username = other_name)
-        m = (
+        result = (
             Message.objects
             .filter(
                 (Q(friendship__user_a = user) & Q(friendship__user_b = other))|
@@ -109,7 +109,7 @@ class DMView(generics.ListAPIView):
             .filter(~Q(deleted_at__isnull = False))
             .order_by("-send_at")
         )
-        return m
+        return result
 #メッセージを送るView。
 class DMSendView(generics.CreateAPIView):
     #シリアライザ

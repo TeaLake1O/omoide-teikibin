@@ -7,6 +7,10 @@ app_name = 'post'
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='homepage'),
+    path('group', GroupListView.as_view(), name='group_list'),
+    
+    
+    
     path('list_page/', views.post_list_page, name='post_list_page'),  # <- Đây là tên đúng
     path('detail/<uuid:post_id>/', views.post_detail_page, name='post_detail_page'),
     path('create_page/', views.PostCreatePageView.as_view(), name='create_post_page'),

@@ -1,4 +1,4 @@
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Subquery
 from post.serializers import *
 
 # post/views.py 
@@ -43,17 +43,76 @@ class HomePageView(generics.ListAPIView):
         MAX_GET_POST = 5
         
         #migrationする
-        f = (
+        result = (
             Post.objects
             .filter(parent_post__isnull = True)
             .filter(deleted_at__isnull = True)
             #annotateは各行に計算済みのデータを作る行、この場合、memberがTrueかをmember_flgにいれてfilterしている
+            #Existsはbool、Subqueryはデータそのもの
             .annotate(member_flg = Exists(member))
             .filter(member_flg = True)
             .select_related("group", "post_user")
             .order_by("-created_at")[:MAX_GET_POST]
         )
-        return f
+        return result
+
+class GroupListView(generics.ListAPIView):
+    
+    serializer_class = GroupListReadSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        
+        me = self.request.user
+        """
+        member = Member.objects.filter(
+            group = OuterRef("id"),
+            member_id = me.id,
+            left_at__isnull = True,
+        )
+        """
+        post = Post.objects.filter(
+            group = OuterRef("id"),
+            deleted_at__isnull = True
+        ).order_by("-created_at")
+        
+        result = (
+            Group.objects
+            .filter(member__member = me, member__left_at__isnull = True)
+            .annotate(last_post_content = Subquery(post.values("post_content")[:1]),
+                last_post_username = Subquery(post.values("post_user__username")[:1]),
+                last_post_nickname = Subquery(post.values("post_user__nickname")[:1]))
+            #.annotate(is_member = Exists(member))
+            #.filter(is_member = True)
+        )
+        return result
+
+"""
+class GroupListAPIView(ListAPIView):
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        me = self.request.user
+        return Group.objects.filter(
+            member__member=me,
+            member__left_at__isnull=True
+        ).distinct().order_by('-created_at')
+
+class GroupListAPIView(ListAPIView):
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated]
+ 
+    def get_queryset(self):
+        me = self.request.user
+        return Group.objects.filter(
+            member__member=me,
+            member__left_at__isnull=True
+        ).distinct().order_by('-created_at')
+"""
+
 
 # ===== HOMEPAGE =====
 def homepage(request):
@@ -112,12 +171,6 @@ class PostCreateAPIView(CreateAPIView):
 
 # --- Group Views ---
 
-
-class GroupListView(LoginRequiredMixin, ListView):
-    """全部のグループを表示するビュー"""
-    model = Group
-    template_name = 'group_list.html'
-    context_object_name = 'groups'
 
 class GroupDetailView(LoginRequiredMixin, DetailView):
     """グループの詳細ページ"""
