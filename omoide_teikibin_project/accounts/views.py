@@ -135,7 +135,7 @@ class ChangePasswordView(PasswordChangeView):
     
     # パスワード変更後のリダイレクト先のURLパターン
     def get_success_url(self):
-        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
+        return reverse_lazy('accounts:change_password_done', kwargs={'pk': self.request.user.pk})
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs) # 継承元のメソッドCALL
@@ -145,6 +145,11 @@ class ChangePasswordView(PasswordChangeView):
         context['previous'] = previous_url
         context["form_name"] = "password_change"
         return context
+
+class ChangePasswordDoneView(PasswordChangeDoneView):
+    '''パスワード変更完了ページのビュー
+    '''
+    template_name = 'change_password_done.html'
 
 class ChangeEmailView(UpdateView):
     '''email変更ページのビュー

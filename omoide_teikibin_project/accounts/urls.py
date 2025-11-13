@@ -46,10 +46,15 @@ urlpatterns = [
          views.ChangeUsernameView.as_view(),
          name='change_username'),
     
-    # ユーザー名変更ページのビューの呼び出し
+    # パスワード変更ページのビューの呼び出し
     path('<int:pk>/change/password',
          views.ChangePasswordView.as_view(),
          name='change_password'),
+    
+    # パスワード変更完了ページのビューの呼び出し
+    path('<int:pk>/change/password/done',
+         views.ChangePasswordDoneView.as_view(),
+         name='change_password_done'),
     
     # email変更ページのビューの呼び出し
     path('<int:pk>/change/email',
