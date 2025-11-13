@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from django.contrib.sessions.models import Session
-from django.views.generic import TemplateView, DetailView, CreateView, FormView, View
+from django.views.generic import TemplateView, DetailView, CreateView, FormView, UpdateView
 from .models import CustomUser
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from .forms import CustomUserCreationForm, PasswordCheckForm
 from django.urls import reverse_lazy
 
@@ -11,7 +11,7 @@ class SignUpView(CreateView):
     # forms.pyで定義したフォームのクラス
     form_class = CustomUserCreationForm
     # レンダリングするテンプレート
-    template_name = "signup.html"
+    template_name = 'signup.html'
     # サインアップ完了後のリダイレクト先のURLパターン
     success_url = reverse_lazy('accounts:signup_success')
     
@@ -40,21 +40,21 @@ class SignUpSuccessView(TemplateView):
     '''サインアップ完了ページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = "signup_success.html"
+    template_name = 'signup_success.html'
 
 class MypageView(DetailView):
     '''マイページのビュー
     '''
     model = CustomUser
     # レンダリングするテンプレート
-    template_name = "mypage.html"
+    template_name = 'mypage.html'
 
 class UserInfoView(DetailView):
     '''ユーザ情報ページのビュー
     '''
     model = CustomUser
     # レンダリングするテンプレート
-    template_name = "user_info.html"
+    template_name = 'user_info.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -68,7 +68,7 @@ class PasswordCheckView(FormView):
     '''パスワード確認ページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = "password_check.html"
+    template_name = 'password_check.html'
     # forms.pyで定義したフォームのクラス
     form_class = PasswordCheckForm
     # パスワード認証後のリダイレクト先のURLパターン
@@ -80,10 +80,10 @@ class PasswordCheckView(FormView):
                 next_url = 'accounts:change_username'
             # パスワード変更ページへ
             elif self.request.session['change'] == 'password':
-                next_url = 'accounts:userinfo'
+                next_url = 'accounts:change_password'
             # email変更ページへ
             elif self.request.session['change'] == 'email':
-                next_url = 'accounts:userinfo'
+                next_url = 'accounts:change_email'
             else:
                 next_url = 'accounts:userinfo'
             del self.request.session['change']
@@ -94,12 +94,14 @@ class PasswordCheckView(FormView):
         
         # ボタン押下時、session更新
         if self.request.method == 'POST':
-            if "change_username" in self.request.POST:
+            if 'change_username' in self.request.POST:
                 self.request.session['change'] = 'username'
-            elif "change_password" in self.request.POST:
+            elif 'change_password' in self.request.POST:
                 self.request.session['change'] = 'password'
-            elif "change_email" in self.request.POST:
+            elif 'change_email' in self.request.POST:
                 self.request.session['change'] = 'email'
+            elif 'delete' in self.request.POST:
+                self.request.session['change'] = 'delete'
             print(self.request.session['change'])
         
         # 前のページのURL(ユーザー情報ページ)
@@ -120,9 +122,59 @@ class PasswordCheckView(FormView):
         else:
             return super().form_invalid(form)
         
-class ChangeUsernameView(TemplateView):
+class ChangeUsernameView(UpdateView):
     '''ユーザー名変更ページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = "change_username.html"
+    template_name = 'change_password.html'
+    model = CustomUser
+    fields = ('username',)
+    # 完了ボタン押下後のリダイレクト先のURLパターン
+    def get_success_url(self):
+        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # 前のページのURL(ユーザー情報ページ)
+        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
+        # contextに設定
+        context['previous'] = previous_url
+        return context
+
+class ChangePasswordView(PasswordChangeView):
+    '''パスワード変更ページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'change_password.html'
+    
+    # パスワード変更後のリダイレクト先のURLパターン
+    def get_success_url(self):
+        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs) # 継承元のメソッドCALL
+        # 前のページのURL(ユーザー情報ページ)
+        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
+        # contextに設定
+        context['previous'] = previous_url
+        context["form_name"] = "password_change"
+        return context
+
+class ChangeEmailView(UpdateView):
+    '''email変更ページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'change_username.html'
+    model = CustomUser
+    fields = ('email',)
+    # 完了ボタン押下後のリダイレクト先のURLパターン
+    def get_success_url(self):
+        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # 前のページのURL(ユーザー情報ページ)
+        previous_url = 'http://127.0.0.1:8000/api/accounts/'+str(self.request.user.id)
+        # contextに設定
+        context['previous'] = previous_url
+        return context

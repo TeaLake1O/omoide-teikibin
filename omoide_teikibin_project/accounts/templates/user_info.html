@@ -18,18 +18,17 @@
         <form method="post" action="{% url 'accounts:passwordcheck' %}">
           {% csrf_token %}
           ユーザー名：{{ object.username }}<button type="submit" name="change_username">変更</button>
-        </form>
-        <form method="post" action="{% url 'accounts:passwordcheck' %}">
-          {% csrf_token %}
           パスワード：●●●●●●●●<button type="submit" name="change_password">変更</button>
-        </form>
-        <form method="post" action="{% url 'accounts:passwordcheck' %}">
-          {% csrf_token %}
           email：{{ object.email }}<button type="submit" name="change_email">変更</button>
         </form>
         <form>
           <p>生年月日：{{ object.birthday }}<a href='./{{ object.id }}'>変更</a></p>
           <p>登録日：{{ object.date_joined }}</p>
+        </form>
+
+        <form method="post" action="{% url 'accounts:passwordcheck' %}">
+          {% csrf_token %}
+          <button type="submit" name="delete">アカウント削除</button>
         </form>
         
         {% else %}
