@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.conf import settings
 import uuid
 from django.utils import timezone
-timezone.now
 
 
 CustomUser = settings.AUTH_USER_MODEL
@@ -16,7 +15,6 @@ class Group(models.Model):
     group_description = models.TextField(verbose_name="グループ説明", null = True, blank = True)
     created_at = models.DateTimeField(verbose_name="作成日時", auto_now_add = True)
     updated_at = models.DateTimeField(verbose_name="変更日時", auto_now = True)
-    
     
     def __str__(self):
         return f"グループ名:{self.group_name}"

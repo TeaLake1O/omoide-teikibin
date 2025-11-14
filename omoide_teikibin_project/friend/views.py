@@ -56,7 +56,7 @@ class FriendRequestView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     #validationerrorのときこれがないとエラーが出る
     queryset = Friendship.objects.none() 
-
+#ユーザを検索するView
 class UserSearchView(generics.ListAPIView):
     serializer_class = FriendSearchSerializer
     
@@ -70,8 +70,6 @@ class UserSearchView(generics.ListAPIView):
         
         if not username :
             return
-        
-        #11/13ここからやる
         
         result = (
             CustomUser.objects

@@ -122,11 +122,10 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         )
         return friendship
 
-#ユーザを検索するシリアライザ
+#ユーザを検索するシリアライザ、postのUseInfSerializerを継承する
 class FriendSearchSerializer(UserInfSerializer):
     class Meta(UserInfSerializer.Meta):
         pass
-
 
 #DM一覧のシリアライザ
 class DMListReadSerializer(serializers.ModelSerializer):
