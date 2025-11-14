@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.models import CustomUser
-from accounts.serialyzer import *
+from common.serialyzer import *
 from .models import Friendship, Message
 
 from django.db.models import Q
@@ -10,18 +10,10 @@ from django.utils import timezone
 
 
 #フレンド一覧のシリアライザ、フレンドが成立しているときのみ
-class FriendReadSerializer(serializers.ModelSerializer):
-    other = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Friendship
-        fields = ["friend_id", "status", "friend_date", "other"]
-    
-    #自身が含まれたフレンドテーブルが作成された相手をpeerとする
-    def get_other(self, obj):
-        me = self.context["request"].user
-        other = obj.user_b if obj.user_a_id == me.id else obj.user_a
-        return MiniUserInfSerializer(other, context=self.context).data
+class FriendReadSerializer(FriendListSerializer):
+    class Meta(FriendListSerializer.Meta):
+        pass
+
 #フレンド申請のシリアライザ、is_request_user_sentを使い申請したユーザを判断する
 class FriendRequestSerializer(serializers.ModelSerializer):
     peer = serializers.SerializerMethodField()

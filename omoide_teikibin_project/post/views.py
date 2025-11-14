@@ -16,8 +16,6 @@ from django.views.generic import ListView, DetailView, CreateView
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 
-# Local imports
-from .serializers import PostSerializer
 from .models import Post, Group, Member
 from .forms import PostCreationForm, GroupCreationForm
 
@@ -90,8 +88,26 @@ class GroupListView(generics.ListAPIView):
         )
         return result
 
+class GroupCreateView(generics.ListAPIView):
+    serializer_class = GroupCreateReadSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        me = self.request.user
+        
+        result = (
+            FS.objects
+            .filter(Q(user_a = me) | Q(user_b = me),
+                    status = FS.Status.ACPT,
+                    deleted_at__isnull = True
+            )
+        )
+        return result
+
 class MemberListAPIView(generics.ListAPIView):
-    serializer_class = MemberSerializer
+    serializer_class = MemberReadSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -131,7 +147,7 @@ class GroupListAPIView(ListAPIView):
             member__member=me,
             member__left_at__isnull=True
         ).distinct().order_by('-created_at')
-"""
+
 
 
 # ===== HOMEPAGE =====
@@ -154,7 +170,6 @@ class PostListView(LoginRequiredMixin, ListView):
     context_object_name = 'posts' 
     
 class PostCreatePageView(LoginRequiredMixin, CreateView):
-    """投稿作成ページビュー"""
     model = Post
     form_class = PostCreationForm
     template_name = 'create_post.html'
@@ -193,7 +208,6 @@ class PostCreateAPIView(CreateAPIView):
 
 
 class GroupDetailView(LoginRequiredMixin, DetailView):
-    """グループの詳細ページ"""
     model = Group
     template_name = 'group_detail.html'
     context_object_name = 'group'
@@ -263,3 +277,4 @@ def leave_group(request, pk):
     Member.objects.filter(group=group, member=request.user).update(left_at=timezone.now())
     return redirect('post:group_detail', pk=pk)
 
+"""

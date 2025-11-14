@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from accounts.serialyzer import *
+from common.serialyzer import *
 
 from post.models import *
 
@@ -26,22 +26,19 @@ class GroupListReadSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["id", "group_name", "group_image", "last_post_nickname", "last_post_username", "last_post_content"]
 
-class PostSerializer(serializers.ModelSerializer):
-    post_user__username = serializers.ReadOnlyField(source='post_user.username')
-
+class GroupCreateReadSerializer(serializers.ModelSerializer):
+    
+    user_inf = serializers.SerializerMethodField(read_only = True)
+    
     class Meta:
-        model = Post
-        fields = (
-            'post_id',
-            'post_user', 
-            'post_user__username', 
-            'post_content', 
-            'created_at', 
-            'updated_at'
-        )
+        model = FS
+        fields = ["user_inf"]
+    
+    def get_user_inf(self, obj):
+        me = self.context["request"].user
+        return MiniUserInfSerializer(obj.user_a if obj.user_b == me else obj.user_b, context=self.context).data
 
-
-class MemberSerializer(serializers.ModelSerializer):
+class MemberReadSerializer(serializers.ModelSerializer):
     member_info = UserInfSerializer(source='member', read_only=True)
 
     class Meta:
