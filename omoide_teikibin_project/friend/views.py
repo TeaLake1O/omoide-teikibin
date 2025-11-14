@@ -57,6 +57,27 @@ class FriendRequestView(generics.CreateAPIView):
     #validationerrorのときこれがないとエラーが出る
     queryset = Friendship.objects.none() 
 
+class UserSearchView(generics.ListAPIView):
+    serializer_class = FriendSearchSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        me = self.request.user
+        
+        username = self.request.query_params.get("username")
+        
+        if not username :
+            return
+        
+        #11/13ここからやる
+        
+        result = (
+            CustomUser.objects
+            .filter(username__icontains = username)
+        )
+        return result
 
 #DMのリストを表示するView、相手のiconと最後のメッセージを取得する
 class DMListView(generics.ListAPIView):

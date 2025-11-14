@@ -3,7 +3,6 @@ from accounts.models import CustomUser
 from .models import Friendship, Message
 from django.db.models import Q
 from django.utils import timezone
-from django.core.exceptions import ValidationError
 
 #user情報の汎用シリアライザ
 class MiniUserInfSerializer(serializers.ModelSerializer):
@@ -119,6 +118,11 @@ class FriendWriteSerializer(serializers.ModelSerializer):
             status = "A2B"
         )
         return friendship
+#ユーザを検索するシリアライザ
+class FriendSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["username"]
 
 
 #DM一覧のシリアライザ
