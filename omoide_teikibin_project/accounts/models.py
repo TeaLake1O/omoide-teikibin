@@ -1,14 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils import timezone
-from uuid import uuid4
 
 #uploadtoにわたす用の関数、instanceがmodelのデータとしてくる
 def gen_image_path_customuser(instance, filename):
     #拡張子を保持しつつ名前を変更
     ext = filename.split('.')[-1].lower()
-    newname = f"{uuid4().hex}.{ext}"
-    return f"users/{instance.username}/{timezone.now():%Y/%m/%d}/{newname}"
+    newname = f"icons.{ext}"
+    return f"users/{instance.username}/{newname}"
 
 
 class CustomUser(AbstractUser):
