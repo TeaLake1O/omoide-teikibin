@@ -60,4 +60,9 @@ urlpatterns = [
     path('<int:pk>/change/email',
          views.ChangeEmailView.as_view(),
          name='change_email'),
+    
+    # アカウント削除ページのビューの呼び出し
+    path('<int:pk>/delete',
+         views.UserDeleteView.as_view(),
+         name='user_delete'),
 ]
