@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView, DetailView, CreateView, FormView, UpdateView
-from .models import CustomUser
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from .models import CustomUser
 from .forms import CustomUserCreationForm, PasswordCheckForm
 from django.urls import reverse_lazy, reverse
+from django.utils import timezone
 
 class SignUpView(CreateView):
     '''サインアップページのビュー
@@ -168,24 +169,24 @@ class UserDeleteView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print('session', self.request.session['delete_step'])
         # contextに設定
         context['step'] = self.request.session.get('delete_step', 1)
         context['cancel_url'] = reverse('accounts:userinfo', args=[self.request.user.pk])
         return context
     
     def post(self, request, *args, **kwargs):
-        """削除確認フローの制御"""
+        '''削除フローの制御'''
         step = request.session.get('delete_step', 1)
         print(0)
         if step == 1:
             # 最初の確認後 → 2回目の確認画面へ
             request.session['delete_step'] = 2
-            print('session', self.request.session['delete_step'])
             return self.get(request, *args, **kwargs)
 
         elif step == 2:
             # 最終確認後 → 削除実行
             request.session['delete_step'] = 3
-            print('session', self.request.session['delete_step'])
+            user = request.user
+            user.deleted_at = timezone.now()  # ← 現在時刻を保存
+            user.save(update_fields=['deleted_at'])
             return self.get(request, *args, **kwargs)
