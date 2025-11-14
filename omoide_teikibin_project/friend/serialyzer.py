@@ -1,9 +1,11 @@
 from rest_framework import serializers
+
 from accounts.models import CustomUser
+from post.serializers import UserInfSerializer
 from .models import Friendship, Message
+
 from django.db.models import Q
 from django.utils import timezone
-from django.core.exceptions import ValidationError
 
 #user情報の汎用シリアライザ
 class MiniUserInfSerializer(serializers.ModelSerializer):
@@ -119,6 +121,11 @@ class FriendWriteSerializer(serializers.ModelSerializer):
             status = "A2B"
         )
         return friendship
+
+#ユーザを検索するシリアライザ
+class FriendSearchSerializer(UserInfSerializer):
+    class Meta(UserInfSerializer.Meta):
+        pass
 
 
 #DM一覧のシリアライザ

@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from post.models import *
 from accounts.models import CustomUser
-from friend.models import Friendship
+from friend.models import Friendship as FS
 
 from django.db.models import Q
 
@@ -32,7 +32,7 @@ class UserInfSerializer(serializers.ModelSerializer):
             return "me"
         
         fs = (
-            Friendship.objects
+            FS.objects
             .filter((Q(user_a = me) & Q(user_b = obj)) | (Q(user_a = obj)|Q(user_b = me)))
             .filter(deleted_at__isnull = True)
             .first()
@@ -41,7 +41,13 @@ class UserInfSerializer(serializers.ModelSerializer):
         if not fs:
             return None
         else:
-            return fs.status
+            match fs.status:
+                case FS.Status.A2B:
+                    return "outgoing" if fs.user_a == me else "incoming"
+                case FS.Status.B2A:
+                    return "outgoing" if fs.user_b == me else "incoming"
+                case FS.Status.ACPT:
+                    return "friend"
 
 
 #ホームページを表示するシリアライザ
