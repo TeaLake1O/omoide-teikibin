@@ -30,5 +30,7 @@ urlpatterns = [
     path('api/post/', include('post.urls')),
     # friend.urlsへのURLパターン
     path("api/friend/", include("friend.urls")),
+    path("api/group/", include("friend.urls")),
+    
     #開発時のみ、メディアURL用
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

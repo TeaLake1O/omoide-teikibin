@@ -86,3 +86,12 @@ class PostSerializer(serializers.ModelSerializer):
             'updated_at'
         )
         read_only_fields = ('post_id', 'post_user', 'created_at', 'updated_at')
+        
+
+class MemberSerializer(serializers.ModelSerializer):
+    member_info = UserInfSerializer(source='member', read_only=True)
+
+    class Meta:
+        model = Member
+        fields = ['id', 'group', 'member', 'member_info']        
+

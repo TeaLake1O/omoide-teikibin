@@ -89,6 +89,18 @@ class GroupListView(generics.ListAPIView):
         )
         return result
 
+class MemberListAPIView(generics.ListAPIView):
+    serializer_class = MemberSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        group_pk = int(self.kwargs['pk'])
+        return Member.objects.filter(
+            group__pk=group_pk,
+            left_at__isnull=True
+        ).select_related('member')
+
+
 """
 class GroupListAPIView(ListAPIView):
     serializer_class = GroupSerializer
