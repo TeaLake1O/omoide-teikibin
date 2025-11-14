@@ -53,6 +53,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 削除ユーザーがリクエスト毎にログアウト実行
+    "accounts.middleware.logout_if_deleted.LogoutIfDeletedMiddleware",
 ]
 
 ROOT_URLCONF = 'omoide_teikibin_project.urls'
