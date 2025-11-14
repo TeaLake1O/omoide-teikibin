@@ -1,32 +1,12 @@
 from rest_framework import serializers
 
 from accounts.models import CustomUser
-from post.serializers import UserInfSerializer
+from accounts.serialyzer import *
 from .models import Friendship, Message
 
 from django.db.models import Q
 from django.utils import timezone
 
-#user情報の汎用シリアライザ
-class MiniUserInfSerializer(serializers.ModelSerializer):
-    icon_url = serializers.SerializerMethodField()
-    class Meta:
-        model = CustomUser
-        fields = ["id", "username", "icon_url","nickname" ]
-    
-    #絶対URL取得用
-    def get_icon_url(self, obj):
-        
-        f = getattr(obj, "user_icon", None)
-        if not f:
-            return None
-        req = self.context.get("request")
-        return req.build_absolute_uri(f.url) if req else f.url
-#user情報の汎用シリアライザ、こっちはnicknameとusernameだけ
-class MiniUserInfNameOnlySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ["id", "username", "nickname" ]
 
 
 #フレンド一覧のシリアライザ、フレンドが成立しているときのみ

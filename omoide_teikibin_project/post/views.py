@@ -1,5 +1,6 @@
 from django.db.models import Exists, OuterRef, Subquery
 from post.serializers import *
+from rest_framework.exceptions import PermissionDenied
 
 # post/views.py 
 from django.http import JsonResponse
@@ -94,11 +95,18 @@ class MemberListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        group_pk = int(self.kwargs['pk'])
-        return Member.objects.filter(
+        group_pk = self.kwargs['pk']
+        
+        me = self.request.user
+        
+        result = Member.objects.filter(
             group__pk=group_pk,
-            left_at__isnull=True
+            left_at__isnull=True,
         ).select_related('member')
+        
+        if not result.filter(member = me).exists():
+            raise PermissionDenied()
+        return result
 
 
 """
