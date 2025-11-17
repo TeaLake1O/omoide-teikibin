@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.models import CustomUser
-from common.serialyzer import *
+from common.serializer import *
 from .models import Friendship, Message
 
 from django.db.models import Q

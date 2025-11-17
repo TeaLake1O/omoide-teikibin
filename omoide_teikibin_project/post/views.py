@@ -2,26 +2,14 @@ from django.db.models import Exists, OuterRef, Subquery
 from post.serializers import *
 from rest_framework.exceptions import PermissionDenied
 
-# post/views.py 
-from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
-from django.utils import timezone
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView, CreateView
-
-
-# Import các thư viện DRF cần thiết
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
-from rest_framework.permissions import IsAuthenticated
-
 from .models import Post, Group, Member
-from .forms import PostCreationForm, GroupCreationForm
 
 from django.db.models import Q
 from rest_framework import permissions, generics
 
+from common.views import *
+
+#ホームページを更新するview
 class HomePageView(generics.ListAPIView):
     #シリアライザ
     serializer_class = HomePageReadSerializer
@@ -55,6 +43,8 @@ class HomePageView(generics.ListAPIView):
         )
         return result
 
+
+#グループ一覧を表示するView
 class GroupListView(generics.ListAPIView):
     
     serializer_class = GroupListReadSerializer
@@ -88,23 +78,20 @@ class GroupListView(generics.ListAPIView):
         )
         return result
 
-class GroupCreateView(generics.ListAPIView):
-    serializer_class = GroupCreateReadSerializer
-    
+
+#グループの追加画面を表示するView
+class GroupCreateUserListView(FriendListView):
+    serializer_class = GroupCreateUserFriedSerializer
+
+#グループ作成のポスト
+class GroupCreateView(generics.CreateAPIView):
+    #シリアライザ
+    serializer_class = GroupCreateWriteSerializer
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        me = self.request.user
-        
-        result = (
-            FS.objects
-            .filter(Q(user_a = me) | Q(user_b = me),
-                    status = FS.Status.ACPT,
-                    deleted_at__isnull = True
-            )
-        )
-        return result
+    #おまじない
+    queryset = Group.objects.none() 
+
 
 class MemberListAPIView(generics.ListAPIView):
     serializer_class = MemberReadSerializer

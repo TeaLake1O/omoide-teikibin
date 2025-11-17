@@ -13,7 +13,6 @@ def gen_image_path_message(instance, filename):
     return f"message/{instance.friendship}/{instance.friendship_id}/{timezone.now():%Y/%m/%d}/{newname}"
 
 
-
 class Friendship(models.Model):
     
     class Status(models.TextChoices):

@@ -7,10 +7,17 @@ from django.utils import timezone
 
 CustomUser = settings.AUTH_USER_MODEL
 
+#uploadtoにわたす用の関数、instanceがmodelのデータとしてくる
+def gen_image_path_group(instance, filename):
+    #拡張子を保持しつつ名前を変更
+    ext = filename.split('.')[-1].lower()
+    newname = f"group_icon.{ext}"
+    return f"group/{instance.group_name}/{newname}"
+
 
 class Group(models.Model):
-    group_name = models.CharField(verbose_name="グループ名", max_length=200)
-    group_image = models.ImageField(verbose_name = "グループ画像", null = True, blank = True)
+    group_name = models.CharField(verbose_name="グループ名", max_length=200, blank = True)
+    group_image = models.ImageField(verbose_name = "グループ画像", null = True, blank = True, upload_to= gen_image_path_group)
     creator = models.ForeignKey(CustomUser, on_delete = models.CASCADE,verbose_name="作成者", blank=True, null=True)
     group_description = models.TextField(verbose_name="グループ説明", null = True, blank = True)
     created_at = models.DateTimeField(verbose_name="作成日時", auto_now_add = True)

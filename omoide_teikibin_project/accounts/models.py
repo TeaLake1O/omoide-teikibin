@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 def gen_image_path_customuser(instance, filename):
     #拡張子を保持しつつ名前を変更
     ext = filename.split('.')[-1].lower()
-    newname = f"icons.{ext}"
+    newname = f"user_icon.{ext}"
     return f"users/{instance.username}/{newname}"
 
 
