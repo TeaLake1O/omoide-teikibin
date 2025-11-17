@@ -68,3 +68,16 @@ class MiniUserInfNameOnlySerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ["id", "username", "nickname" ]
 
+#フレンド一覧の汎用シリアライザ
+class FriendListSerializer(serializers.ModelSerializer):
+    other = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = FS
+        fields = ["friend_id", "friend_date", "other"]
+    
+    #自身が含まれたフレンドテーブルが作成された相手をpeerとする
+    def get_other(self, obj):
+        me = self.context["request"].user
+        return MiniUserInfSerializer(obj.user_b if obj.user_a_id == me.id else obj.user_a, context=self.context).data
+

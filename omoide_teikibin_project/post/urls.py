@@ -1,6 +1,7 @@
 # post/urls.py
 from django.urls import path
 from . import views
+from friend.views import FriendListView
 from post.views import *
 
 app_name = 'post'
@@ -8,7 +9,8 @@ app_name = 'post'
 urlpatterns = [
     path('', HomePageView.as_view(), name='homepage'),
     path('group', GroupListView.as_view(), name='group_list'),
-    path('group/create', GroupCreateView.as_view(), name='group_create_userlist'),
+    path('group/create', GroupCreateUserListView.as_view(), name='group_create_userlist'),
+    path('group/create/post', GroupCreateView.as_view(), name='group_create_action'),
     path("group/<int:pk>/member", MemberListAPIView.as_view(), name = "member_list"),
     
 ]

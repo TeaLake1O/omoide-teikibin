@@ -26,11 +26,10 @@ urlpatterns = [
     path('', IndexView.as_view() , name='index'),
     # accounts.urlsへのURLパターン
     path('api/accounts/', include('accounts.urls')),
-    # post.urlsへのURLパターン
+    # post.urlsへのURLパターンW
     path('api/post/', include('post.urls')),
     # friend.urlsへのURLパターン
     path("api/friend/", include("friend.urls")),
-    path("api/group/", include("friend.urls")),
     
     #開発時のみ、メディアURL用
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

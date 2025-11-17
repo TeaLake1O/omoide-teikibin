@@ -1,5 +1,5 @@
 from friend.models import *
-from friend.serialyzer import *
+from friend.serializer import *
 
 from django.db.models import Q
 from rest_framework import permissions, generics
@@ -7,26 +7,14 @@ from rest_framework import permissions, generics
 from django.db.models import Subquery, OuterRef
 from django.shortcuts import get_object_or_404
 
+from common.views import FriendListView
+
 
 #自身のフレンド関係が成立済みのユーザの一覧表示
-class FriendListView(generics.ListAPIView):
+class MyFriendListView(FriendListView):
     #シリアライザ
     serializer_class = FriendReadSerializer
-    #未ログインで403を返す
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        user = self.request.user
-        
-        result = (
-            Friendship.objects
-            .filter(Q(user_a = user) | Q(user_b = user))
-            .filter(status = Friendship.Status.ACPT)
-            .filter(deleted_at__isnull = True)
-            .select_related("user_a", "user_b")
-            .order_by("-friend_date")
-        )
-        return result
+
 #自身、もしくは別のユーザのデータを返すget
 class RequestListView(generics.ListAPIView):
     #シリアライザ
