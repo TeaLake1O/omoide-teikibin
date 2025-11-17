@@ -111,6 +111,72 @@ class GroupCreateWriteSerializer(serializers.ModelSerializer):
             
             Member.objects.bulk_create(members)
         return group_rs
+#グループ設定変更のpostシリアライザ
+class GroupUpdateSerializer(serializers.ModelSerializer):
+    #リストに入ったid、childでオブジェクトの型を指定、allow_emptyで空を許容しない
+    send_ids = serializers.PrimaryKeyRelatedField(
+        many = True,
+        write_only = True,
+        queryset = CustomUser.objects.all()
+        )
+    delete_user = serializers.PrimaryKeyRelatedField(write_only = True)
+    
+    class Meta:
+        model = Group
+        fields = ["id","group_name" ,"group_image", "delete_user","send_ids"]
+    
+    def validate_send_ids(self, users):
+        me = self.context["request"].user
+        
+        if not users :
+            return
+
+        #重複排除、返すときlistに戻す
+        user_id_dict = {user.id:user for user in users}
+        send_ids = set(user_id_dict.keys())
+
+        #自分自身がidとして含まれていた場合
+        if me.id in send_ids:
+            raise serializers.ValidationError("グループ作成に自分自身は指定できません。")
+        
+        #自身のフレンドを取得する
+        friendship = (
+            FS.objects
+            .filter(Q(user_a = me, user_b__in = send_ids) |
+                    Q(user_b = me, user_a__in = send_ids),
+                    deleted_at__isnull = True,
+                    status = FS.Status.ACPT
+            )
+        )
+        
+        #フレンドのユーザのみを抽出する。辞書にして後のifでの検索をはやくする
+        friends = {i.user_a_id if i.user_b_id == me.id else i.user_b_id for i in friendship}
+
+        #friendでないユーザを判定してリストに追加する
+        not_friends = [j for j in send_ids if j not in friends]
+        
+        #もしフレンドでないユーザがsend_idsに含まれていたらエラー
+        if not_friends:
+            raise serializers.ValidationError(f"グループに追加できるユーザはフレンドのみです")
+
+        return list(user_id_dict.values())
+    
+    def validate_delete_user(self, user):
+        group_id = self.context["request"].data.get("group_id")
+        
+        if not user or group_id is None:
+            return
+        
+        is_group_admin = (
+            Member.objects
+            .filter(group_id = group_id,
+                    member = user,
+                    role = True
+                ).exists()
+        )
+        if not is_group_admin :
+            return
+
 
 #メンバー一覧のシリアライザ
 class MemberReadSerializer(serializers.ModelSerializer):
