@@ -1,7 +1,9 @@
 from .models import CustomUser
 from .forms import CustomUserCreationForm, PasswordCheckForm
+from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.http import HttpResponseRedirect
+from django.core.mail import send_mail
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
@@ -204,8 +206,40 @@ class TestTokenView(TemplateView):
         # ログイン中のユーザーを取得
         username = request.POST.get('username')
         password = request.POST.get('password')
-class TestTokenPageView(TemplateView):
+        
+        user = authenticate(username=username, password=password)
+        if user is None:
+            return HttpResponse("ユーザー名またはパスワードが違います")
+        
+        token, created = Token.objects.get_or_create(user=user)
+        print(token.key)
+        
+        # 送信するURL
+        token_url = request.build_absolute_uri(reverse("accounts:test_tokenup") + f"?token={token.key}")
+        # メール本文
+        message=f'''以下のリンクをクリックしてトークンを確認してください：
+        
+{token_url}
+
+このメールに心当たりがない場合は削除してください。
+'''
+        
+        send_mail(
+            subject="あなたのトークンリンク",
+            message=message,
+            from_email="noreply@example.com",
+            recipient_list=[user.email],
+        )
+        
+        return HttpResponse("メールを送信しました！")
+        
+class TestTokenUpView(TemplateView):
     '''トークンテストページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = "test_tokenpage.html"
+    template_name = "test_tokenup.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["token"] = self.request.GET.get("token")
+        return context

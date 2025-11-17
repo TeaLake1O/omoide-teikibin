@@ -7,12 +7,12 @@
   <body>
     <main>
       <h3>トークンテスト</h3>
-      <form method="post" action="{% url 'accounts:test_tokenup' %}">
+      <form method="post">
         {% csrf_token %}
         <p>{{ user.get_username }}でログイン中</p>
         <input type="text" name="username" placeholder="ユーザー名"><br>
-        <input type="password" name="password" placeholder="パスワード"><br>
-        <button type="submit">トークン取得</button>
+  <input type="password" name="password" placeholder="パスワード"><br>
+        <button type="submit">トークン照合</button>
       </form>
     </main>
   </body>

@@ -74,10 +74,7 @@ urlpatterns = [
          views.TestTokenView.as_view(),
          name='test_token'),
     # トークン送信完了
-    path('test/tokenup',
-         obtain_auth_token,
-         name='test_tokenup'),
-    path("token-page/",
-         views.TestTokenPageView.as_view(),
-         name="token-page"),
+    path("test/tokenup/",
+         views.TestTokenUpView.as_view(),
+         name="test_tokenup"),
 ]
