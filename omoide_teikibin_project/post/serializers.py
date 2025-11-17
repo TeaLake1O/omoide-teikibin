@@ -120,3 +120,22 @@ class MemberReadSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id', 'member', 'member_info']        
 
+
+class CommentReadSerializer(serializers.ModelSerializer):
+    user_info = UserInfSerializer(source='comment_user', read_only=True)
+    class Meta:
+        model = Post
+        fields = ['post_id', 'comment_content', 'created_at', 'user_info', 'post_name', 'post']
+
+    def get_user_info(self, obj):
+        return UserInfSerializer(obj.comment_user, context=self.context).data
+
+class PostDetailSerializer(serializers.ModelSerializer):
+    user_info = UserInfSerializer(source='post_user', read_only=True)
+    comments = CommentReadSerializer(source='parent_post', many=True, read_only=True)
+    class Meta:
+        model = Post
+        fields = ['post_id', 'post_content', 'post_images', 'created_at', 'user_info', 'group', 'comments']
+
+    def get_user_info(self, obj):
+        return UserInfSerializer(obj.post_user, context=self.context).data  

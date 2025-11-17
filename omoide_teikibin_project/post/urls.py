@@ -10,8 +10,10 @@ urlpatterns = [
     path('', HomePageView.as_view(), name='homepage'),
     path('group', GroupListView.as_view(), name='group_list'),
     path('group/create', GroupCreateUserListView.as_view(), name='group_create_userlist'),
-    path('group/create/post', GroupCreateView.as_view(), name='group_create_action'),
+    path('group/create/action', GroupCreateView.as_view(), name='group_create_action'),
     path("group/<int:pk>/member", MemberListAPIView.as_view(), name = "member_list"),
+    
+    path('detail/<uuid:post_id>/', views.PostDetailAPIView.as_view(), name='post_detail_page'),
     
 ]
 

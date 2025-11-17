@@ -92,7 +92,7 @@ class GroupCreateView(generics.CreateAPIView):
     #おまじない
     queryset = Group.objects.none() 
 
-
+#グループに所属しているメンバー一覧を表示するView
 class MemberListAPIView(generics.ListAPIView):
     serializer_class = MemberReadSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -108,6 +108,39 @@ class MemberListAPIView(generics.ListAPIView):
         ).select_related('member')
         
         if not result.filter(member = me).exists():
+            raise PermissionDenied()
+        return result
+
+class GroupUpdateView(generics.UpdateAPIView):
+    #シリアライザ
+    #serializer_class = 
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    #おまじない
+    queryset = Group.objects.none() 
+
+class PostDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = PostDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'post_id'
+    def get_queryset(self):
+        post_id = self.kwargs['post_id']
+        return Post.objects.filter(post_id = post_id)
+
+class CommentListAPIView(generics.ListAPIView):
+    serializer_class = CommentReadSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        post_pk = self.kwargs['pk']
+
+        me = self.request.user
+
+        result = Post.objects.filter(
+            parent_post__post_id=post_pk,
+        ).select_related('comment_user')
+
+        if not result.filter(comment_user = me).exists():
             raise PermissionDenied()
         return result
 
