@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from rest_framework.authtoken.views import obtain_auth_token
 
 app_name = 'accounts'
 
@@ -65,4 +66,18 @@ urlpatterns = [
     path('<int:pk>/delete',
          views.UserDeleteView.as_view(),
          name='user_delete'),
+    
+    
+    # テスト
+    # トークン
+    path('test/token',
+         views.TestTokenView.as_view(),
+         name='test_token'),
+    # トークン送信完了
+    path('test/tokenup',
+         obtain_auth_token,
+         name='test_tokenup'),
+    path("token-page/",
+         views.TestTokenPageView.as_view(),
+         name="token-page"),
 ]

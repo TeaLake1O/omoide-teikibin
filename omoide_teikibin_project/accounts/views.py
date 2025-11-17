@@ -1,10 +1,12 @@
-from django.shortcuts import render
-from django.views.generic import TemplateView, DetailView, CreateView, FormView, UpdateView
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from .models import CustomUser
 from .forms import CustomUserCreationForm, PasswordCheckForm
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
+from django.views.generic import TemplateView, DetailView, CreateView, FormView, UpdateView
+from rest_framework.authtoken.models import Token
 
 class SignUpView(CreateView):
     '''サインアップページのビュー
@@ -190,3 +192,20 @@ class UserDeleteView(TemplateView):
             user.deleted_at = timezone.now()  # ← 現在時刻を保存
             user.save(update_fields=['deleted_at'])
             return self.get(request, *args, **kwargs)
+
+# 砂場
+class TestTokenView(TemplateView):
+    '''トークンテストページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'test_token.html'
+    
+    def post(self, request, *args, **kwargs):
+        # ログイン中のユーザーを取得
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+class TestTokenPageView(TemplateView):
+    '''トークンテストページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = "test_tokenpage.html"
