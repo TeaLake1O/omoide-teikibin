@@ -13,28 +13,14 @@ from rest_framework.authtoken.models import Token
 class SignUpView(CreateView):
     '''サインアップページのビュー
     '''
-    # forms.pyで定義したフォームのクラス
-    form_class = CustomUserCreationForm
     # レンダリングするテンプレート
     template_name = 'signup.html'
+    # forms.pyで定義したフォームのクラス
+    form_class = CustomUserCreationForm
     # サインアップ完了後のリダイレクト先のURLパターン
     success_url = reverse_lazy('accounts:signup_success')
     
-    
     def form_valid(self, form):
-        '''CreateViewクラスのform_valid()をオーバーライド
-        
-        フォームのバリエーションを通過したときに呼ばれる
-        フォームデータの登録を行う
-        
-        paramaters:
-            form(django.forms.Form):
-            form_classに格納されているCustomUserCreationFormオブジェクト
-        Return:
-            HttpResponseRedirectオブジェクト:
-            スーパークラスのform_valid()の戻り値を返すことで、
-            success_urlで設定されているURLにリダイレクトさせる
-        '''
         # formオブジェクトのフィールドの値をデータベースに保存
         user = form.save()
         self.object = user
@@ -228,25 +214,19 @@ class TokenUpView(TemplateView):
        
         try:     # トークンの照合
             req = NewEmail.objects.get(token=token_key)
-            context["token_valid"] = True
-            # useridの照合
-            if req.user == user:
-                # emailの変更
-                old_email = user.email
-                user.email = req.new_email
-                user.save()
-                # このリクエストを削除（再利用禁止）
-                req.delete()
-                # contextに設定
-                context["token_valid"] = True
-                print('旧：', old_email)
-                print('新：', user.email)
-                
-            else:
-                context["error_message"] = "不正な接続です。"
-                context["token_valid"] = False
             
-        except Token.DoesNotExist:
+            # emailの変更
+            old_email = user.email
+            user.email = req.new_email
+            user.save()
+            # このリクエストを削除（再利用禁止）
+            req.delete()
+            # contextに設定
+            context["token_valid"] = True
+            print('旧：', old_email)
+            print('新：', user.email)
+            
+        except NewEmail.DoesNotExist:
             context["error_message"] = "トークンが無効か、存在しません。"
             
         return context
