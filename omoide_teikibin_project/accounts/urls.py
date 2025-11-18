@@ -72,14 +72,4 @@ urlpatterns = [
          views.UserDeleteView.as_view(),
          name='user_delete'),
     
-    
-    # テスト
-    # トークン
-    path('test/token',
-         views.TestTokenView.as_view(),
-         name='test_token'),
-    # トークン送信完了
-    path("test/tokenup/",
-         views.TestTokenUpView.as_view(),
-         name="test_tokenup"),
 ]
