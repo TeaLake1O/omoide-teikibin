@@ -154,16 +154,61 @@ class ChangePasswordDoneView(PasswordChangeDoneView):
     '''
     template_name = 'change_password_done.html'
 
-class ChangeEmailView(UpdateView):
+class ChangeEmailView(TemplateView):
     '''email変更ページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = 'change_username.html'
-    model = CustomUser
-    fields = ('email',)
-    # 完了ボタン押下後のリダイレクト先のURLパターン
-    def get_success_url(self):
-        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
+    template_name = 'change_email.html'
+    
+    def post(self, request, *args, **kwargs):
+        # contextの設定
+        context = self.get_context_data()
+        # ログイン中のユーザーを取得
+        username = request.user
+        password = request.POST.get('password')
+        email = request.POST.get('email')
+        if email == request.user.email:
+            context["error_message"] = "同じメールアドレスです"
+            return self.render_to_response(context)
+        
+        user = authenticate(username=username, password=password)
+        if user is None:
+            context["error_message"] = "ユーザー名またはパスワードが違います"
+            return self.render_to_response(context)
+        
+        token, created = Token.objects.get_or_create(user=user)
+        print(token.key)
+        
+        # 送信するURL
+        token_url = request.build_absolute_uri(reverse("accounts:test_tokenup") + f"?token={token.key}")
+        # メール本文
+        message=f'''以下のリンクをクリックしてトークンを確認してください：
+        
+{token_url}
+
+このメールに心当たりがない場合は削除してください。
+'''
+        
+        send_mail(
+            subject="あなたのトークンリンク",
+            message=message,
+            from_email="noreply@example.com",
+            recipient_list=[email],
+        )
+        
+        context["success_message"] = "メールを送信しました！"
+        return self.render_to_response(context)
+
+class TokenUpView(TemplateView):
+    '''トークンテストページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = "tokenup.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["token"] = self.request.GET.get("token")
+        return context
 
 class UserDeleteView(TemplateView):
     '''アカウント削除ページのビュー
@@ -194,52 +239,4 @@ class UserDeleteView(TemplateView):
             user.deleted_at = timezone.now()  # ← 現在時刻を保存
             user.save(update_fields=['deleted_at'])
             return self.get(request, *args, **kwargs)
-
-# 砂場
-class TestTokenView(TemplateView):
-    '''トークンテストページのビュー
-    '''
-    # レンダリングするテンプレート
-    template_name = 'test_token.html'
-    
-    def post(self, request, *args, **kwargs):
-        # ログイン中のユーザーを取得
-        username = request.POST.get('username')
-        password = request.POST.get('password')
         
-        user = authenticate(username=username, password=password)
-        if user is None:
-            return HttpResponse("ユーザー名またはパスワードが違います")
-        
-        token, created = Token.objects.get_or_create(user=user)
-        print(token.key)
-        
-        # 送信するURL
-        token_url = request.build_absolute_uri(reverse("accounts:test_tokenup") + f"?token={token.key}")
-        # メール本文
-        message=f'''以下のリンクをクリックしてトークンを確認してください：
-        
-{token_url}
-
-このメールに心当たりがない場合は削除してください。
-'''
-        
-        send_mail(
-            subject="あなたのトークンリンク",
-            message=message,
-            from_email="noreply@example.com",
-            recipient_list=[user.email],
-        )
-        
-        return HttpResponse("メールを送信しました！")
-        
-class TestTokenUpView(TemplateView):
-    '''トークンテストページのビュー
-    '''
-    # レンダリングするテンプレート
-    template_name = "test_tokenup.html"
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["token"] = self.request.GET.get("token")
-        return context

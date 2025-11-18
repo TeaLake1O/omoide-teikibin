@@ -61,7 +61,12 @@ urlpatterns = [
     path('<int:pk>/change/email',
          views.ChangeEmailView.as_view(),
          name='change_email'),
-    
+
+    # トークン送信完了
+    path("tokenup/",
+         views.TokenUpView.as_view(),
+         name="tokenup"),
+
     # アカウント削除ページのビューの呼び出し
     path('<int:pk>/delete',
          views.UserDeleteView.as_view(),
