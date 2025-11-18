@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="ja">
   <head>
-    <title>User Info</title>
+    <title>Omoide teikibin</title>
   </head>
 
   <body>
     <main>
-      <h3>トークンテスト</h3>
+      <h3>トークンチェック</h3>
       
-      {% if token %}
-        <p>トークンが認証されました
-      {% else %}
-        <p>トークンがありません。</p>
+      {% if error_message %}
+        <p style="color:red;">{{ error_message }}</p>
       {% endif %}
-        </main>
+
+      {% if token_valid %}
+        <p style="color:green;">トークンは有効です！</p>
+        <p>ユーザー名: {{ user.username }}</p>
+        <a href="../{{ user.id }}">ユーザー情報ページへ</a>
+      {% endif %}
+    </main>
   </body>
 
 </html>

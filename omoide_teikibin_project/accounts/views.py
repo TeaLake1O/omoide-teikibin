@@ -1,4 +1,4 @@
-from .models import CustomUser
+from .models import CustomUser, NewEmail
 from .forms import CustomUserCreationForm, PasswordCheckForm
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
@@ -167,20 +167,32 @@ class ChangeEmailView(TemplateView):
         username = request.user
         password = request.POST.get('password')
         email = request.POST.get('email')
-        if email == request.user.email:
+        if password == None and email == None:
+            context["message"] = "パスワードと新しいメールアドレスを入力してください"
+            return self.render_to_response(context)
+        elif email == request.user.email:
             context["error_message"] = "同じメールアドレスです"
             return self.render_to_response(context)
-        
+        try: 
+            CustomUser.objects.get(email=email)
+            context["error_message"] = "既に使用されているメールアドレスです。"
+            return self.render_to_response(context)
+        except CustomUser.DoesNotExist:
+            pass
+            
         user = authenticate(username=username, password=password)
         if user is None:
             context["error_message"] = "ユーザー名またはパスワードが違います"
             return self.render_to_response(context)
         
-        token, created = Token.objects.get_or_create(user=user)
-        print(token.key)
+        # NewEmailに新しいメールアドレスを保存、トークンを生成
+        req = NewEmail.objects.create(
+                user=user,
+                new_email=email
+            )
         
-        # 送信するURL
-        token_url = request.build_absolute_uri(reverse("accounts:test_tokenup") + f"?token={token.key}")
+        # 送信するURL(トークンとemailを付随)
+        token_url = request.build_absolute_uri(reverse("accounts:tokenup") + f"?token={req.token}")
         # メール本文
         message=f'''以下のリンクをクリックしてトークンを確認してください：
         
@@ -188,26 +200,55 @@ class ChangeEmailView(TemplateView):
 
 このメールに心当たりがない場合は削除してください。
 '''
-        
+        # メール送信
         send_mail(
             subject="あなたのトークンリンク",
             message=message,
             from_email="noreply@example.com",
             recipient_list=[email],
         )
-        
         context["success_message"] = "メールを送信しました！"
+        
         return self.render_to_response(context)
 
 class TokenUpView(TemplateView):
-    '''トークンテストページのビュー
+    '''トークンURLページのビュー
     '''
     # レンダリングするテンプレート
     template_name = "tokenup.html"
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["token"] = self.request.GET.get("token")
+        # URL パラメータ token を取得
+        token_key = self.request.GET.get("token")
+        user = self.request.user
+        if not token_key:
+            context["error_message"] = "トークンが指定されていません。"
+            return context
+       
+        try:     # トークンの照合
+            req = NewEmail.objects.get(token=token_key)
+            context["token_valid"] = True
+            # useridの照合
+            if req.user == user:
+                # emailの変更
+                old_email = user.email
+                user.email = req.new_email
+                user.save()
+                # このリクエストを削除（再利用禁止）
+                req.delete()
+                # contextに設定
+                context["token_valid"] = True
+                print('旧：', old_email)
+                print('新：', user.email)
+                
+            else:
+                context["error_message"] = "不正な接続です。"
+                context["token_valid"] = False
+            
+        except Token.DoesNotExist:
+            context["error_message"] = "トークンが無効か、存在しません。"
+            
         return context
 
 class UserDeleteView(TemplateView):
@@ -226,7 +267,6 @@ class UserDeleteView(TemplateView):
     def post(self, request, *args, **kwargs):
         '''削除フローの制御'''
         step = request.session.get('delete_step', 1)
-        print(0)
         if step == 1:
             # 最初の確認後 → 2回目の確認画面へ
             request.session['delete_step'] = 2
@@ -236,7 +276,7 @@ class UserDeleteView(TemplateView):
             # 最終確認後 → 削除実行
             request.session['delete_step'] = 3
             user = request.user
-            user.deleted_at = timezone.now()  # ← 現在時刻を保存
+            user.deleted_at = timezone.now()  # 現在時刻を保存
             user.save(update_fields=['deleted_at'])
             return self.get(request, *args, **kwargs)
         
