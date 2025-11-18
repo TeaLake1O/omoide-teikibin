@@ -18,21 +18,33 @@ class SignUpView(CreateView):
     # forms.pyで定義したフォームのクラス
     form_class = CustomUserCreationForm
     # サインアップ完了後のリダイレクト先のURLパターン
-    success_url = reverse_lazy('accounts:signup_success')
+    success_url = reverse_lazy('accounts:signup_token')
     
     def form_valid(self, form):
         # formオブジェクトのフィールドの値をデータベースに保存
         user = form.save()
+        user.deleted_at = timezone.now()  # emailが未認証なので一旦削除日時登録
         self.object = user
+        
+        # セッションに保存
+        self.request.session['username'] = user.username
+        self.request.session['email'] = user.email
+        
         # 戻り値はスーパークラスのform_valid()の戻り値(HttpResponseRedirect)
         return super().form_valid(form)
 
-class SignUpSuccessView(TemplateView):
+class SignUpTokenView(TemplateView):
     '''サインアップ完了ページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = 'signup_success.html'
-
+    template_name = 'signup_token.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['username'] = self.request.session['username']
+        context['email'] = self.request.session['email']
+        return context
+    
 class MypageView(DetailView):
     '''マイページのビュー
     '''

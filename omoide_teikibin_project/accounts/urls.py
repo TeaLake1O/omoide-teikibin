@@ -11,10 +11,10 @@ urlpatterns = [
         views.SignUpView.as_view(),
         name='signup'),
     
-    # サインアップ完了ページのビューの呼び出し
-    path('signup_success/',
-         views.SignUpSuccessView.as_view(),
-         name='signup_success'),
+    # サインアップトークン送信ページのビューの呼び出し
+    path('signup_token/',
+         views.SignUpTokenView.as_view(),
+         name='signup_token'),
     
     # ログインページのビューの呼び出し
     path('login/',
