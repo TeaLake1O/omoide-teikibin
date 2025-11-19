@@ -34,7 +34,7 @@ class SignUpView(CreateView):
         return super().form_valid(form)
 
 class SignUpTokenView(TemplateView):
-    '''サインアップ完了ページのビュー
+    '''サインアップトークン送信ページのビュー
     '''
     # レンダリングするテンプレート
     template_name = 'signup_token.html'
@@ -44,6 +44,48 @@ class SignUpTokenView(TemplateView):
         context['username'] = self.request.session['username']
         context['email'] = self.request.session['email']
         return context
+    
+    def post(self, request, *args, **kwargs):
+        username = request.session['username']
+        password = request.POST.get('password')
+        email = request.session['email']
+        # contextの設定
+        context = self.get_context_data()
+        
+        if password == None:
+            context['message'] = 'パスワードを入力してください'
+            return self.render_to_response(context)
+        
+        user = authenticate(username=username, password=password)
+        if user is None:
+            context['error_message'] = 'パスワードが違います'
+            return self.render_to_response(context)
+        
+        # NewEmailにメールアドレスを保存、トークンを生成
+        req = NewEmail.objects.create(
+                user=user,
+                new_email=email
+            )
+        
+        # 送信するURL(トークンとemailを付随)
+        token_url = request.build_absolute_uri(reverse('accounts:tokenup') + f'?token={req.token}')
+        # メール本文
+        message=f'''以下のリンクをクリックしてトークンを確認してください：
+        
+{token_url}
+
+このメールに心当たりがない場合は削除してください。
+'''
+        # メール送信
+        send_mail(
+            subject='あなたのトークンリンク',
+            message=message,
+            from_email='noreply@example.com',
+            recipient_list=[email],
+        )
+        context['success_message'] = 'メールを送信しました！'
+        
+        return self.render_to_response(context)
     
 class MypageView(DetailView):
     '''マイページのビュー
@@ -117,7 +159,7 @@ class PasswordCheckView(FormView):
     
     def form_valid(self, form):
         # 入力を取得
-        pass_text = self.request.POST.get("password", "")
+        pass_text = self.request.POST.get('password', '')
         
         # パスワードが正しいかチェック
         if self.request.user.check_password(pass_text):
@@ -166,21 +208,21 @@ class ChangeEmailView(TemplateView):
         password = request.POST.get('password')
         email = request.POST.get('email')
         if password == None and email == None:
-            context["message"] = "パスワードと新しいメールアドレスを入力してください"
+            context['message'] = 'パスワードと新しいメールアドレスを入力してください'
             return self.render_to_response(context)
         elif email == request.user.email:
-            context["error_message"] = "同じメールアドレスです"
+            context['error_message'] = '同じメールアドレスです'
             return self.render_to_response(context)
-        try: 
+        try:    # 新しいメールアドレスが使用されていないかチェック
             CustomUser.objects.get(email=email)
-            context["error_message"] = "既に使用されているメールアドレスです。"
+            context['error_message'] = '既に使用されているメールアドレスです。'
             return self.render_to_response(context)
         except CustomUser.DoesNotExist:
             pass
             
         user = authenticate(username=username, password=password)
         if user is None:
-            context["error_message"] = "ユーザー名またはパスワードが違います"
+            context['error_message'] = 'ユーザー名またはパスワードが違います'
             return self.render_to_response(context)
         
         # NewEmailに新しいメールアドレスを保存、トークンを生成
@@ -190,7 +232,7 @@ class ChangeEmailView(TemplateView):
             )
         
         # 送信するURL(トークンとemailを付随)
-        token_url = request.build_absolute_uri(reverse("accounts:tokenup") + f"?token={req.token}")
+        token_url = request.build_absolute_uri(reverse('accounts:tokenup') + f'?token={req.token}')
         # メール本文
         message=f'''以下のリンクをクリックしてトークンを確認してください：
         
@@ -200,12 +242,12 @@ class ChangeEmailView(TemplateView):
 '''
         # メール送信
         send_mail(
-            subject="あなたのトークンリンク",
+            subject='あなたのトークンリンク',
             message=message,
-            from_email="noreply@example.com",
+            from_email='noreply@example.com',
             recipient_list=[email],
         )
-        context["success_message"] = "メールを送信しました！"
+        context['success_message'] = 'メールを送信しました！'
         
         return self.render_to_response(context)
 
@@ -213,33 +255,34 @@ class TokenUpView(TemplateView):
     '''トークンURLページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = "tokenup.html"
+    template_name = 'tokenup.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # URL パラメータ token を取得
-        token_key = self.request.GET.get("token")
-        user = self.request.user
+        token_key = self.request.GET.get('token')
         if not token_key:
-            context["error_message"] = "トークンが指定されていません。"
+            context['error_message'] = 'トークンが指定されていません。'
             return context
        
         try:     # トークンの照合
             req = NewEmail.objects.get(token=token_key)
-            
-            # emailの変更
+            username = req.user
+            user = CustomUser.objects.get(username=username)
+            # データの更新
             old_email = user.email
-            user.email = req.new_email
+            if old_email == req.new_email:  # 新規登録の場合
+                user.deleted_at = None
+            else:   # email変更の場合
+                user.email = req.new_email
             user.save()
             # このリクエストを削除（再利用禁止）
             req.delete()
             # contextに設定
-            context["token_valid"] = True
-            print('旧：', old_email)
-            print('新：', user.email)
+            context['token_valid'] = True
             
         except NewEmail.DoesNotExist:
-            context["error_message"] = "トークンが無効か、存在しません。"
+            context['error_message'] = 'トークンが無効か、存在しません。'
             
         return context
 
