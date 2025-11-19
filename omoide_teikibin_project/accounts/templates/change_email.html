@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>User Info</title>
+  </head>
+
+  <body>
+    <main>
+      <div>
+        <h3>email変更</h3>
+        {% if user.is_authenticated %}
+        <p>{{ user.get_username }}でログイン中</p>
+
+        {% if success_message %}
+          <p style="color: green;">{{ success_message }}</p>
+        {% else %}
+          <p>現在のemail：{{ user.email }}</p>
+          <form method="post">
+            {% csrf_token %}
+            <input type="password" name="password" placeholder="パスワード"><br>
+            <input type="email" name="email" placeholder="email"><br>
+            <button type="submit">送信</button>
+            <p>{{ message }}</p>
+            {% if error_message %}
+              <p style="color: red;">{{ error_message }}</p>
+            {% endif %}
+          </form>
+        {% endif %}
+        <a href="../../{{ user.id }}">ユーザー情報ページへ戻る</a>
+
+        {% else %}
+        <p>ログインしていません</p>
+        {% endif %}
+      </div>
+    </main>
+  </body>
+
+</html>

@@ -1,4 +1,4 @@
-from .models import CustomUser
+from .models import CustomUser, NewEmail
 from .forms import CustomUserCreationForm, PasswordCheckForm
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
@@ -13,39 +13,120 @@ from rest_framework.authtoken.models import Token
 class SignUpView(CreateView):
     '''サインアップページのビュー
     '''
-    # forms.pyで定義したフォームのクラス
-    form_class = CustomUserCreationForm
     # レンダリングするテンプレート
     template_name = 'signup.html'
+    # forms.pyで定義したフォームのクラス
+    form_class = CustomUserCreationForm
     # サインアップ完了後のリダイレクト先のURLパターン
-    success_url = reverse_lazy('accounts:signup_success')
-    
+    success_url = reverse_lazy('accounts:signup_token')
     
     def form_valid(self, form):
-        '''CreateViewクラスのform_valid()をオーバーライド
-        
-        フォームのバリエーションを通過したときに呼ばれる
-        フォームデータの登録を行う
-        
-        paramaters:
-            form(django.forms.Form):
-            form_classに格納されているCustomUserCreationFormオブジェクト
-        Return:
-            HttpResponseRedirectオブジェクト:
-            スーパークラスのform_valid()の戻り値を返すことで、
-            success_urlで設定されているURLにリダイレクトさせる
-        '''
         # formオブジェクトのフィールドの値をデータベースに保存
         user = form.save()
+        user.deleted_at = timezone.now()  # emailが未認証なので一旦削除日時登録
         self.object = user
+        
+        # セッションに保存
+        self.request.session['username'] = user.username
+        self.request.session['email'] = user.email
+        
         # 戻り値はスーパークラスのform_valid()の戻り値(HttpResponseRedirect)
         return super().form_valid(form)
 
-class SignUpSuccessView(TemplateView):
-    '''サインアップ完了ページのビュー
+class SignUpTokenView(TemplateView):
+    '''サインアップトークン送信ページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = 'signup_success.html'
+    template_name = 'signup_token.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['username'] = self.request.session['username']
+        context['email'] = self.request.session['email']
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        username = request.session['username']
+        password = request.POST.get('password')
+        email = request.session['email']
+        # contextの設定
+        context = self.get_context_data()
+        
+        if password == None:
+            context['message'] = 'パスワードを入力してください'
+            return self.render_to_response(context)
+        
+        user = authenticate(username=username, password=password)
+        if user is None:
+            context['error_message'] = 'パスワードが違います'
+            return self.render_to_response(context)
+        
+        # NewEmailにメールアドレスを保存、トークンを生成
+        req = NewEmail.objects.create(
+                user=user,
+                new_email=email
+            )
+        
+        # 送信するURL(トークンとemailを付随)
+        token_url = request.build_absolute_uri(reverse('accounts:tokenup') + f'?token={req.token}')
+        # メール本文
+        message=f'''以下のリンクをクリックしてトークンを確認してください：
+        
+{token_url}
+
+このメールに心当たりがない場合は削除してください。
+'''
+        # メール送信
+        send_mail(
+            subject='あなたのトークンリンク',
+            message=message,
+            from_email='noreply@example.com',
+            recipient_list=[email],
+        )
+        context['success_message'] = 'メールを送信しました！'
+        
+        return self.render_to_response(context)
+    
+class TokenUpView(TemplateView):
+    '''トークンURLページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'tokenup.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # URL パラメータ token を取得
+        token_key = self.request.GET.get('token')
+        if not token_key:
+            context['error_message'] = 'トークンが指定されていません。'
+            return context
+       
+        try:     # トークンの照合
+            req = NewEmail.objects.get(token=token_key)
+            username = req.user
+            user = CustomUser.objects.get(username=username)
+            # データの更新
+            if user.email == req.new_email:  # 新規登録の場合
+                user.deleted_at = None
+                url = reverse('accounts:login')
+                message = 'ログインページへ'
+            else:   # email変更の場合
+                user.email = req.new_email
+                url = reverse('index')
+                message = 'ホームページへ'
+            user.save()
+            # このリクエストを削除（再利用禁止）
+            req.delete()
+            # contextに設定
+            context['token_valid'] = True
+            context['username'] = username
+            context['url'] = url
+            context['link_message'] = message
+            
+        except NewEmail.DoesNotExist:
+            context['error_message'] = 'トークンが無効か、存在しません。'
+            
+        return context
 
 class MypageView(DetailView):
     '''マイページのビュー
@@ -119,7 +200,7 @@ class PasswordCheckView(FormView):
     
     def form_valid(self, form):
         # 入力を取得
-        pass_text = self.request.POST.get("password", "")
+        pass_text = self.request.POST.get('password', '')
         
         # パスワードが正しいかチェック
         if self.request.user.check_password(pass_text):
@@ -154,16 +235,62 @@ class ChangePasswordDoneView(PasswordChangeDoneView):
     '''
     template_name = 'change_password_done.html'
 
-class ChangeEmailView(UpdateView):
+class ChangeEmailView(TemplateView):
     '''email変更ページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = 'change_username.html'
-    model = CustomUser
-    fields = ('email',)
-    # 完了ボタン押下後のリダイレクト先のURLパターン
-    def get_success_url(self):
-        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
+    template_name = 'change_email.html'
+    
+    def post(self, request, *args, **kwargs):
+        # contextの設定
+        context = self.get_context_data()
+        # ログイン中のユーザーを取得
+        username = request.user
+        password = request.POST.get('password')
+        email = request.POST.get('email')
+        if password == None and email == None:
+            context['message'] = 'パスワードと新しいメールアドレスを入力してください'
+            return self.render_to_response(context)
+        elif email == request.user.email:
+            context['error_message'] = '同じメールアドレスです'
+            return self.render_to_response(context)
+        try:    # 新しいメールアドレスが使用されていないかチェック
+            CustomUser.objects.get(email=email)
+            context['error_message'] = '既に使用されているメールアドレスです。'
+            return self.render_to_response(context)
+        except CustomUser.DoesNotExist:
+            pass
+            
+        user = authenticate(username=username, password=password)
+        if user is None:
+            context['error_message'] = 'ユーザー名またはパスワードが違います'
+            return self.render_to_response(context)
+        
+        # NewEmailに新しいメールアドレスを保存、トークンを生成
+        req = NewEmail.objects.create(
+                user=user,
+                new_email=email
+            )
+        
+        # 送信するURL(トークンとemailを付随)
+        token_url = request.build_absolute_uri(reverse('accounts:tokenup') + f'?token={req.token}')
+        # メール本文
+        message=f'''以下のリンクをクリックしてトークンを確認してください：
+        
+{token_url}
+
+このメールに心当たりがない場合は削除してください。
+'''
+        # メール送信
+        send_mail(
+            subject='あなたのトークンリンク',
+            message=message,
+            from_email='noreply@example.com',
+            recipient_list=[email],
+        )
+        context['success_message'] = 'メールを送信しました！'
+        
+        return self.render_to_response(context)
 
 class UserDeleteView(TemplateView):
     '''アカウント削除ページのビュー
@@ -181,7 +308,6 @@ class UserDeleteView(TemplateView):
     def post(self, request, *args, **kwargs):
         '''削除フローの制御'''
         step = request.session.get('delete_step', 1)
-        print(0)
         if step == 1:
             # 最初の確認後 → 2回目の確認画面へ
             request.session['delete_step'] = 2
@@ -191,55 +317,7 @@ class UserDeleteView(TemplateView):
             # 最終確認後 → 削除実行
             request.session['delete_step'] = 3
             user = request.user
-            user.deleted_at = timezone.now()  # ← 現在時刻を保存
+            user.deleted_at = timezone.now()  # 現在時刻を保存
             user.save(update_fields=['deleted_at'])
             return self.get(request, *args, **kwargs)
-
-# 砂場
-class TestTokenView(TemplateView):
-    '''トークンテストページのビュー
-    '''
-    # レンダリングするテンプレート
-    template_name = 'test_token.html'
-    
-    def post(self, request, *args, **kwargs):
-        # ログイン中のユーザーを取得
-        username = request.POST.get('username')
-        password = request.POST.get('password')
         
-        user = authenticate(username=username, password=password)
-        if user is None:
-            return HttpResponse("ユーザー名またはパスワードが違います")
-        
-        token, created = Token.objects.get_or_create(user=user)
-        print(token.key)
-        
-        # 送信するURL
-        token_url = request.build_absolute_uri(reverse("accounts:test_tokenup") + f"?token={token.key}")
-        # メール本文
-        message=f'''以下のリンクをクリックしてトークンを確認してください：
-        
-{token_url}
-
-このメールに心当たりがない場合は削除してください。
-'''
-        
-        send_mail(
-            subject="あなたのトークンリンク",
-            message=message,
-            from_email="noreply@example.com",
-            recipient_list=[user.email],
-        )
-        
-        return HttpResponse("メールを送信しました！")
-        
-class TestTokenUpView(TemplateView):
-    '''トークンテストページのビュー
-    '''
-    # レンダリングするテンプレート
-    template_name = "test_tokenup.html"
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["token"] = self.request.GET.get("token")
-        return context

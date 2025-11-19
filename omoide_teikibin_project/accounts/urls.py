@@ -11,10 +11,10 @@ urlpatterns = [
         views.SignUpView.as_view(),
         name='signup'),
     
-    # サインアップ完了ページのビューの呼び出し
-    path('signup_success/',
-         views.SignUpSuccessView.as_view(),
-         name='signup_success'),
+    # サインアップトークン送信ページのビューの呼び出し
+    path('signup_token/',
+         views.SignUpTokenView.as_view(),
+         name='signup_token'),
     
     # ログインページのビューの呼び出し
     path('login/',
@@ -61,20 +61,15 @@ urlpatterns = [
     path('<int:pk>/change/email',
          views.ChangeEmailView.as_view(),
          name='change_email'),
-    
+
+    # トークン送信完了
+    path("tokenup/",
+         views.TokenUpView.as_view(),
+         name="tokenup"),
+
     # アカウント削除ページのビューの呼び出し
     path('<int:pk>/delete',
          views.UserDeleteView.as_view(),
          name='user_delete'),
     
-    
-    # テスト
-    # トークン
-    path('test/token',
-         views.TestTokenView.as_view(),
-         name='test_token'),
-    # トークン送信完了
-    path("test/tokenup/",
-         views.TestTokenUpView.as_view(),
-         name="test_tokenup"),
 ]

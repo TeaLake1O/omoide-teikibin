@@ -22,7 +22,10 @@
               {% csrf_token %}
               ユーザー名：{{ object.username }}<button type="submit" name="change_username">変更</button>
               パスワード：●●●●●●●●<button type="submit" name="change_password">変更</button>
-              email：{{ object.email }}<button type="submit" name="change_email">変更</button>
+            </form>
+            <form method="post" action="./{{ object.id }}/change/email">
+              {% csrf_token %}
+              email：{{ object.email }}<button type="submit">変更</button>
             </form>
             <form>
               <p>生年月日：{{ object.birthday }}<a href='./{{ object.id }}'>変更</a></p>
