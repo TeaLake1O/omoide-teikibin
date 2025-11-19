@@ -3,16 +3,16 @@ from django.utils import timezone
 from django.conf import settings
 import uuid
 from django.utils import timezone
+from accounts.models import CustomUser
 
 
-CustomUser = settings.AUTH_USER_MODEL
 
 #uploadtoにわたす用の関数、instanceがmodelのデータとしてくる
 def gen_image_path_group(instance, filename):
     #拡張子を保持しつつ名前を変更
     ext = filename.split('.')[-1].lower()
     newname = f"group_icon.{ext}"
-    return f"group/{instance.group_name}/{newname}"
+    return f"group/{instance.group_id}/{newname}"
 
 
 class Group(models.Model):
@@ -22,6 +22,28 @@ class Group(models.Model):
     group_description = models.TextField(verbose_name="グループ説明", null = True, blank = True)
     created_at = models.DateTimeField(verbose_name="作成日時", auto_now_add = True)
     updated_at = models.DateTimeField(verbose_name="変更日時", auto_now = True)
+    
+    #引数で受け取ったuserが自身のグループの管理者か確認する関数
+    def is_admin(self, user:CustomUser)->bool:
+        return (
+            Member.objects
+            .filter(
+                group = self,
+                left_at__isnull = True,
+                role = True,
+                member = user
+            ).exists()
+        )
+    #引数で受け取ったuserが自身のグループに所属しているか確認する関数
+    def is_member(self, user:CustomUser)->bool:
+        return(
+            Member.objects
+            .filter(
+                group = self,
+                member = user,
+                left_at__isnull = True
+            ).exists()
+        )
     
     def __str__(self):
         return f"グループ名:{self.group_name}"
@@ -60,7 +82,6 @@ class Post(models.Model):
     post_images = models.ImageField(null=True, blank=True,verbose_name="投稿画像")
     parent_post = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name="親投稿")
     group = models.ForeignKey(Group, on_delete = models.CASCADE)
-    
     
     class Meta:
         verbose_name = "投稿"

@@ -11,27 +11,13 @@ urlpatterns = [
     path('group', GroupListView.as_view(), name='group_list'),
     path('group/create', GroupCreateUserListView.as_view(), name='group_create_userlist'),
     path('group/create/action', GroupCreateView.as_view(), name='group_create_action'),
+    path('group/<int:pk>/update/action', GroupUpdateView.as_view(), name='group_update_action'),
     path("group/<int:pk>/member", MemberListAPIView.as_view(), name = "member_list"),
+    path("group/<int:pk>/member/friend", GroupInviteFriendListView.as_view(), name = "invite_friend"),
     
-    path('detail/<uuid:post_id>/', views.PostDetailAPIView.as_view(), name='post_detail_page'),
+    path("group/<int:pk>/action", CreatePostView.as_view(), name = "create_post"),
+    path('group/<int:pk>', views.GroupView.as_view(), name='group_detail_page'),
     
+    path('detail/<uuid:post_id>/comments/', CommentListAPIView.as_view(), name='comment_list_api'),
+    path('detail/<uuid:post_id>/', PostDetailAPIView.as_view(), name='post_detail_page')
 ]
-
-"""
-    path('list_page/', views.post_list_page, name='post_list_page'),  # <- Đây là tên đúng
-    path('detail/<uuid:post_id>/', views.post_detail_page, name='post_detail_page'),
-    path('create_page/', views.PostCreatePageView.as_view(), name='create_post_page'),
-    
-    
-    # API
-    path('api/list/', views.PostListAPIView.as_view(), name='post_list_api'),
-    path('api/detail/<uuid:pk>/', views.PostDetailAPIView.as_view(), name='post_detail_api'),
-    path('api/create/', views.PostCreateAPIView.as_view(), name='post_create_api'),
-
-    # Groups
-    path('groups/', views.GroupListView.as_view(), name='group_list'),
-    path('groups/create/', views.GroupCreateView.as_view(), name='group_create'),
-    path('groups/<int:pk>/', views.GroupDetailView.as_view(), name='group_detail'),
-    path('groups/<int:pk>/join/', views.join_group, name='group_join'),
-    path('groups/<int:pk>/leave/', views.leave_group, name='group_leave'),
-    """

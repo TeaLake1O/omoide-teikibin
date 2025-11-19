@@ -65,11 +65,6 @@ class Message(models.Model):
     
     class Meta:
         verbose_name = "メッセージ"
-        constraints = [
-            models.CheckConstraint(
-                check = Q(sender = F('friendship__user_a')) | Q(sender = F('friendship__user_b')),
-                name="friendship_has_sender",
-            ),
-        ]
+        
     def __str__(self):
         return f"{self.friendship.user_a}(送信者A)と{self.friendship.user_b}(送信者B)のメッセージ"

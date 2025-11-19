@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from common.views import FriendListView
 
 
+
 #自身のフレンド関係が成立済みのユーザの一覧表示
 class MyFriendListView(FriendListView):
     #シリアライザ

@@ -9,6 +9,7 @@ from rest_framework import permissions, generics
 
 from common.views import *
 
+from django.shortcuts import get_object_or_404
 #ホームページを更新するview
 class HomePageView(generics.ListAPIView):
     #シリアライザ
@@ -55,13 +56,7 @@ class GroupListView(generics.ListAPIView):
     def get_queryset(self):
         
         me = self.request.user
-        """
-        member = Member.objects.filter(
-            group = OuterRef("id"),
-            member_id = me.id,
-            left_at__isnull = True,
-        )
-        """
+
         post = Post.objects.filter(
             group = OuterRef("id"),
             deleted_at__isnull = True
@@ -81,7 +76,7 @@ class GroupListView(generics.ListAPIView):
 
 #グループの追加画面を表示するView
 class GroupCreateUserListView(FriendListView):
-    serializer_class = GroupCreateUserFriedSerializer
+    serializer_class = GroupUserFriedReadSerializer
 
 #グループ作成のポスト
 class GroupCreateView(generics.CreateAPIView):
@@ -91,6 +86,63 @@ class GroupCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     #おまじない
     queryset = Group.objects.none() 
+#グループ更新のポスト
+class GroupUpdateView(generics.UpdateAPIView):
+    
+    #シリアライザ
+    serializer_class = GroupUpdateWriteSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    #おまじない
+    queryset = Group.objects.all()
+
+#グループに追加できる自身のフレンドを表示するView
+class GroupInviteFriendListView(FriendListView):
+    
+    #シリアライザ
+    serializer_class = GroupInviteFriendReadSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    #FriendListViewを継承してクエリをグループに所属してないメンバーに絞る
+    def get_queryset(self):
+        me = self.request.user
+        
+        group_pk = self.kwargs['pk']
+        qs = super().get_queryset()
+        username = self.request.query_params.get("username")
+        
+        member_is_user_a =(
+            Member.objects
+            .filter(
+                group_id = group_pk,
+                member = OuterRef("user_a"),
+                left_at__isnull = True
+            )
+        )
+
+        member_is_user_b =(
+            Member.objects
+            .filter(
+                group_id = group_pk,
+                member = OuterRef("user_b"),
+                left_at__isnull = True
+            )
+        )
+
+        result = (
+            qs
+            .annotate(
+                in_group_a = Exists(member_is_user_a),
+                in_group_b = Exists(member_is_user_b)
+            ).filter(
+                Q(user_a = me, in_group_b = False) |
+                Q(user_b = me, in_group_a = False)
+            )
+        )
+        return result
 
 #グループに所属しているメンバー一覧を表示するView
 class MemberListAPIView(generics.ListAPIView):
@@ -110,191 +162,61 @@ class MemberListAPIView(generics.ListAPIView):
         if not result.filter(member = me).exists():
             raise PermissionDenied()
         return result
+#グループ内投稿一覧View
+class GroupView(generics.RetrieveAPIView):
+    serializer_class = GroupReadSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'pk'
 
-class GroupUpdateView(generics.UpdateAPIView):
+    def get_object(self):
+        pk = self.kwargs['pk']
+        obj = get_object_or_404(Group, pk=pk)
+
+        if not obj.member_set.filter(member=self.request.user, left_at__isnull=True).exists():
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("このグループに所属していません")
+
+        return obj
+#投稿ポスト
+class CreatePostView(generics.CreateAPIView):
     #シリアライザ
-    #serializer_class = 
+    serializer_class = PostCreateWriteSerializer
+    
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
     #おまじない
-    queryset = Group.objects.none() 
+    queryset = Post.objects.all()
+    
+    #urlからグループを取得してcontextにいれる
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["group"] = get_object_or_404(Group, pk=self.kwargs["pk"])
+        return ctx
 
 class PostDetailAPIView(generics.RetrieveAPIView):
     serializer_class = PostDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'post_id'
-    def get_queryset(self):
+
+    def get_object(self):
         post_id = self.kwargs['post_id']
-        return Post.objects.filter(post_id = post_id)
+        obj = get_object_or_404(Post, post_id=post_id)
+
+        if not obj.group.member_set.filter(member=self.request.user, left_at__isnull=True).exists():
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("あなたはこの投稿を見る権限がありません。")
+
+        return obj
 
 class CommentListAPIView(generics.ListAPIView):
     serializer_class = CommentReadSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        post_pk = self.kwargs['pk']
+        post_id = self.kwargs['post_id']
+        post = get_object_or_404(Post, post_id=post_id)
 
-        me = self.request.user
+        if not post.group.member_set.filter(member=self.request.user, left_at__isnull=True).exists():
+            raise PermissionDenied("あなたはこの投稿のコメントを見る権限がありません。")
 
-        result = Post.objects.filter(
-            parent_post__post_id=post_pk,
-        ).select_related('comment_user')
+        return Post.objects.filter(parent_post=post, deleted_at__isnull=True).select_related('post_user').order_by('created_at')
 
-        if not result.filter(comment_user = me).exists():
-            raise PermissionDenied()
-        return result
-
-
-"""
-class GroupListAPIView(ListAPIView):
-    serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        me = self.request.user
-        return Group.objects.filter(
-            member__member=me,
-            member__left_at__isnull=True
-        ).distinct().order_by('-created_at')
-
-class GroupListAPIView(ListAPIView):
-    serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticated]
- 
-    def get_queryset(self):
-        me = self.request.user
-        return Group.objects.filter(
-            member__member=me,
-            member__left_at__isnull=True
-        ).distinct().order_by('-created_at')
-
-
-
-# ===== HOMEPAGE =====
-def homepage(request):
-    return render(request, 'homepage.html')
-
-# ===== PAGE VIEWS =====
-@login_required
-def post_list_page(request):
-    return render(request, 'post_list.html')
-
-@login_required
-def post_detail_page(request, post_id): # Note: This is redefined later, but let's keep it for now if used by old urls.
-    post = get_object_or_404(Post, post_id=post_id)
-    return render(request, 'post_detail.html', {'post': post})
-
-class PostListView(LoginRequiredMixin, ListView):
-    model = Post
-    template_name = 'post_list.html' 
-    context_object_name = 'posts' 
-    
-class PostCreatePageView(LoginRequiredMixin, CreateView):
-    model = Post
-    form_class = PostCreationForm
-    template_name = 'create_post.html'
-    success_url = reverse_lazy('post:post_list_page')
-
-    def form_valid(self, form):
-        form.instance.post_user = self.request.user
-        return super().form_valid(form)    
-
-# ===== API Views  =====
-
-# 1. API LIST
-class PostListAPIView(ListAPIView):
-    queryset = Post.objects.all().order_by('-created_at')
-    serializer_class = PostSerializer
-
-# 2. API DETAIL
-class PostDetailAPIView(RetrieveAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    lookup_field = 'pk' 
-
-# 3. API CREATE 
-class PostCreateAPIView(CreateAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated] 
-
-    def perform_create(self, serializer):
-        serializer.save(post_user=self.request.user)
-
-# ===== Class-Based Views for Page Rendering =====
-
-
-# --- Group Views ---
-
-
-class GroupDetailView(LoginRequiredMixin, DetailView):
-    model = Group
-    template_name = 'group_detail.html'
-    context_object_name = 'group'
-    # 'pk' 
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        group = self.get_object()
-        
-        # グループの現在のメンバーを取得
-        context['members'] = Member.objects.filter(group=group, left_at__isnull=True) 
-        
-        context['posts'] = group.group_posts.all().order_by('-created_at')[:20] 
-        
-        context['is_member'] = Member.objects.filter(
-            group=group, 
-            member=self.request.user,
-            left_at__isnull=True
-        ).exists()
-        return context
-
-class GroupCreateView(LoginRequiredMixin, CreateView):
-    model = Group
-    form_class = GroupCreationForm
-    template_name = 'group_form.html'
-    # 作成成功後のリダイレクト先はform_validで指定
-    
-    def form_valid(self, form):
-
-        form.instance.creator = self.request.user
-
-        self.object = form.save() 
-        
-        Member.objects.create(
-            member=self.request.user,
-            group=self.object,
-            role=True # 管理者権限
-        )
-        #移動先のURLにリダイレクト
-        return redirect(self.get_success_url())
-
-    def get_success_url(self):
-        # 移動先のURLをグループ詳細ページに設定
-        return reverse_lazy('post:group_detail', kwargs={'pk': self.object.pk})
-
-# --- グループ参加・退会ビュー ---
-
-@login_required
-def join_group(request, pk):
-    
-    group = get_object_or_404(Group, pk=pk)
-    
-    # 作成または更新して、ユーザーをグループに参加させる
-    Member.objects.update_or_create(
-        group=group,
-        member=request.user,
-        defaults={'left_at': None, 'role': False} 
-    )
-    return redirect('post:group_detail', pk=pk)
-
-@login_required
-def leave_group(request, pk):
-
-    group = get_object_or_404(Group, pk=pk)
-    
-    # 参加記録のleft_atフィールドを更新して退会日時を設定
-    Member.objects.filter(group=group, member=request.user).update(left_at=timezone.now())
-    return redirect('post:group_detail', pk=pk)
-
-"""
