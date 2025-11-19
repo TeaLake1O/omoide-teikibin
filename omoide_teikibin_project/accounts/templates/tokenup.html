@@ -14,8 +14,8 @@
 
       {% if token_valid %}
         <p style="color:green;">トークンは有効です！</p>
-        <p>ユーザー名: {{ user.username }}</p>
-        <a href="../{{ user.id }}">ユーザー情報ページへ</a>
+        <p>ユーザー名: {{ username }}</p>
+        <a href={{ url }}>{{ link_message }}</a>
       {% endif %}
     </main>
   </body>

@@ -87,6 +87,47 @@ class SignUpTokenView(TemplateView):
         
         return self.render_to_response(context)
     
+class TokenUpView(TemplateView):
+    '''トークンURLページのビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'tokenup.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # URL パラメータ token を取得
+        token_key = self.request.GET.get('token')
+        if not token_key:
+            context['error_message'] = 'トークンが指定されていません。'
+            return context
+       
+        try:     # トークンの照合
+            req = NewEmail.objects.get(token=token_key)
+            username = req.user
+            user = CustomUser.objects.get(username=username)
+            # データの更新
+            if user.email == req.new_email:  # 新規登録の場合
+                user.deleted_at = None
+                url = reverse('accounts:login')
+                message = 'ログインページへ'
+            else:   # email変更の場合
+                user.email = req.new_email
+                url = reverse('index')
+                message = 'ホームページへ'
+            user.save()
+            # このリクエストを削除（再利用禁止）
+            req.delete()
+            # contextに設定
+            context['token_valid'] = True
+            context['username'] = username
+            context['url'] = url
+            context['link_message'] = message
+            
+        except NewEmail.DoesNotExist:
+            context['error_message'] = 'トークンが無効か、存在しません。'
+            
+        return context
+
 class MypageView(DetailView):
     '''マイページのビュー
     '''
@@ -250,41 +291,6 @@ class ChangeEmailView(TemplateView):
         context['success_message'] = 'メールを送信しました！'
         
         return self.render_to_response(context)
-
-class TokenUpView(TemplateView):
-    '''トークンURLページのビュー
-    '''
-    # レンダリングするテンプレート
-    template_name = 'tokenup.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # URL パラメータ token を取得
-        token_key = self.request.GET.get('token')
-        if not token_key:
-            context['error_message'] = 'トークンが指定されていません。'
-            return context
-       
-        try:     # トークンの照合
-            req = NewEmail.objects.get(token=token_key)
-            username = req.user
-            user = CustomUser.objects.get(username=username)
-            # データの更新
-            old_email = user.email
-            if old_email == req.new_email:  # 新規登録の場合
-                user.deleted_at = None
-            else:   # email変更の場合
-                user.email = req.new_email
-            user.save()
-            # このリクエストを削除（再利用禁止）
-            req.delete()
-            # contextに設定
-            context['token_valid'] = True
-            
-        except NewEmail.DoesNotExist:
-            context['error_message'] = 'トークンが無効か、存在しません。'
-            
-        return context
 
 class UserDeleteView(TemplateView):
     '''アカウント削除ページのビュー
