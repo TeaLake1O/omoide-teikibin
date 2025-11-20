@@ -32,10 +32,25 @@ urlpatterns = [
          views.MypageView.as_view(),
          name='mypage'),
     
+    # アイコン編集のビューの呼び出し
+    path('mypage/<int:pk>/edit/icon',
+         views.EditIconView.as_view(),
+         name='edit_icon'),
+
+     # ニックネーム編集のビューの呼び出し
+    path('mypage/<int:pk>/edit/nickname',
+         views.EditNicknameView.as_view(),
+         name='edit_nickname'),
+    
     # ユーザ情報のビューの呼び出し
     path('<int:pk>',
          views.UserInfoView.as_view(),
          name='userinfo'),
+    
+    # 誕生日編集のビューの呼び出し
+    path('<int:pk>/edit/birthday',
+         views.EditBirthdayView.as_view(),
+         name='edit_birthday'),
     
     # パスワード確認ページのビューの呼び出し
     path('passwordcheck/',
