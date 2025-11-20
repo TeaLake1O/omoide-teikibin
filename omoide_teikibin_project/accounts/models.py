@@ -15,6 +15,8 @@ class CustomUser(AbstractUser):
     birthday = models.DateField(blank = True, null= True, verbose_name = "誕生日")
     user_icon = models.ImageField(null = True, blank= True, verbose_name = "アイコン", upload_to = gen_image_path_customuser)
     email = models.EmailField(unique = True,max_length=254, verbose_name = "メールアドレス")
+    
+    user_profile = models.CharField(blank = True, null = True, verbose_name = "自己紹介")
 
 class NewEmail(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
