@@ -10,6 +10,10 @@ from django.utils import timezone
 from django.views.generic import TemplateView, DetailView, CreateView, FormView, UpdateView
 from rest_framework.authtoken.models import Token
 
+#追加import
+from rest_framework import permissions, generics
+from django.db.models import Subquery, OuterRef
+
 class SignUpView(CreateView):
     '''サインアップページのビュー
     '''
@@ -32,6 +36,7 @@ class SignUpView(CreateView):
         
         # 戻り値はスーパークラスのform_valid()の戻り値(HttpResponseRedirect)
         return super().form_valid(form)
+
 
 class SignUpTokenView(TemplateView):
     '''サインアップトークン送信ページのビュー
