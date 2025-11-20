@@ -4,6 +4,7 @@ from friend.models import Friendship as FS
 from django.db.models import Q
 
 
+
 #user情報の汎用シリアライザ
 class UserInfSerializer(serializers.ModelSerializer):
     
@@ -46,6 +47,15 @@ class UserInfSerializer(serializers.ModelSerializer):
                     return "outgoing" if fs.user_b == me else "incoming"
                 case FS.Status.ACPT:
                     return "friend"
+
+class MypageUserInfSerializer(UserInfSerializer):
+    
+    user_profile = serializers.CharField(read_only = True)
+    
+    class Meta(UserInfSerializer.Meta):
+        fields = (*UserInfSerializer.Meta.fields ,"user_profile")
+
+
 
 #user情報の汎用シリアライザ
 class MiniUserInfSerializer(serializers.ModelSerializer):
