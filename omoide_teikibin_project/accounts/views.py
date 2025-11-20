@@ -131,9 +131,29 @@ class TokenUpView(TemplateView):
 class MypageView(DetailView):
     '''マイページのビュー
     '''
-    model = CustomUser
     # レンダリングするテンプレート
     template_name = 'mypage.html'
+    model = CustomUser
+    
+class EditIconView(UpdateView):
+    '''アイコン編集のビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'edit.html'
+    model = CustomUser
+    fields = ['user_icon']
+    def get_success_url(self):
+        return reverse_lazy('accounts:mypage', kwargs={'pk': self.request.user.pk})
+
+class EditNicknameView(UpdateView):
+    '''ニックネーム編集のビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'edit.html'
+    model = CustomUser
+    fields = ['nickname']
+    def get_success_url(self):
+        return reverse_lazy('accounts:mypage', kwargs={'pk': self.request.user.pk})
 
 class UserInfoView(DetailView):
     '''ユーザ情報ページのビュー
@@ -152,7 +172,17 @@ class UserInfoView(DetailView):
             self.request.session['delete_step'] = 1
             print(self.request.session['delete_step'])
         return context
-    
+
+class EditBirthdayView(UpdateView):
+    '''アイコン編集のビュー
+    '''
+    # レンダリングするテンプレート
+    template_name = 'edit.html'
+    model = CustomUser
+    fields = ['birthday']
+    def get_success_url(self):
+        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
+
 class PasswordCheckView(FormView):
     '''パスワード確認ページのビュー
     '''
