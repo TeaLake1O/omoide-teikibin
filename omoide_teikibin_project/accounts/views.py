@@ -13,6 +13,10 @@ from rest_framework.authtoken.models import Token
 #追加import
 from rest_framework import permissions, generics
 from django.db.models import Subquery, OuterRef
+from post.models import *
+from django.db.models import Prefetch
+from .serializer import *
+
 
 class SignUpView(CreateView):
     '''サインアップページのビュー
@@ -36,7 +40,6 @@ class SignUpView(CreateView):
         
         # 戻り値はスーパークラスのform_valid()の戻り値(HttpResponseRedirect)
         return super().form_valid(form)
-
 
 class SignUpTokenView(TemplateView):
     '''サインアップトークン送信ページのビュー
@@ -91,7 +94,7 @@ class SignUpTokenView(TemplateView):
         context['success_message'] = 'メールを送信しました！'
         
         return self.render_to_response(context)
-    
+
 class TokenUpView(TemplateView):
     '''トークンURLページのビュー
     '''
@@ -136,29 +139,9 @@ class TokenUpView(TemplateView):
 class MypageView(DetailView):
     '''マイページのビュー
     '''
+    model = CustomUser
     # レンダリングするテンプレート
     template_name = 'mypage.html'
-    model = CustomUser
-    
-class EditIconView(UpdateView):
-    '''アイコン編集のビュー
-    '''
-    # レンダリングするテンプレート
-    template_name = 'edit.html'
-    model = CustomUser
-    fields = ['user_icon']
-    def get_success_url(self):
-        return reverse_lazy('accounts:mypage', kwargs={'pk': self.request.user.pk})
-
-class EditNicknameView(UpdateView):
-    '''ニックネーム編集のビュー
-    '''
-    # レンダリングするテンプレート
-    template_name = 'edit.html'
-    model = CustomUser
-    fields = ['nickname']
-    def get_success_url(self):
-        return reverse_lazy('accounts:mypage', kwargs={'pk': self.request.user.pk})
 
 class UserInfoView(DetailView):
     '''ユーザ情報ページのビュー
@@ -177,16 +160,6 @@ class UserInfoView(DetailView):
             self.request.session['delete_step'] = 1
             print(self.request.session['delete_step'])
         return context
-
-class EditBirthdayView(UpdateView):
-    '''アイコン編集のビュー
-    '''
-    # レンダリングするテンプレート
-    template_name = 'edit.html'
-    model = CustomUser
-    fields = ['birthday']
-    def get_success_url(self):
-        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
 
 class PasswordCheckView(FormView):
     '''パスワード確認ページのビュー
@@ -242,7 +215,7 @@ class PasswordCheckView(FormView):
             return super().form_valid(form)
         else:
             return super().form_invalid(form)
-        
+
 class ChangeUsernameView(UpdateView):
     '''ユーザー名変更ページのビュー
     '''
@@ -263,7 +236,6 @@ class ChangePasswordView(PasswordChangeView):
     # パスワード変更後のリダイレクト先のURLパターン
     def get_success_url(self):
         return reverse_lazy('accounts:change_password_done', kwargs={'pk': self.request.user.pk})
-    
 
 class ChangePasswordDoneView(PasswordChangeDoneView):
     '''パスワード変更完了ページのビュー
@@ -355,4 +327,51 @@ class UserDeleteView(TemplateView):
             user.deleted_at = timezone.now()  # 現在時刻を保存
             user.save(update_fields=['deleted_at'])
             return self.get(request, *args, **kwargs)
+
+
+class MypageAPIView(generics.RetrieveAPIView):
+    
+    #シリアライザ
+    serializer_class = MypageUserInfSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    lookup_field = "username"
+    lookup_url_kwarg = "username"
+    
+    def get_queryset(self):
         
+        me = self.request.user
+        username = self.kwargs["username"]
+        
+        user_post = (
+            Post.objects
+            .filter(
+                post_user__username = username,
+                deleted_at__isnull = True
+            ).order_by("-created_at")
+        )
+        
+        rs = (
+            CustomUser.objects
+            .filter(
+                username = username,
+                deleted_at__isnull = True,
+                #投稿のような複数あるデータはprefetch_relatedを使う
+            ).prefetch_related(
+                Prefetch("post_set",
+                        queryset = user_post,
+                        to_attr="user_post",
+                    )
+            )
+        )
+        return rs
+    
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        me = self.request.user
+        username = self.kwargs["username"]
+        
+        ctx["is_me"] = me.is_authenticated and me.username == username
+        return ctx

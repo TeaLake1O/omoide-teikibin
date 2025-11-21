@@ -2,6 +2,7 @@ from rest_framework import serializers
 from accounts.models import CustomUser
 from friend.models import Friendship as FS
 from django.db.models import Q
+from post.models import Post
 
 
 
@@ -48,15 +49,6 @@ class UserInfSerializer(serializers.ModelSerializer):
                 case FS.Status.ACPT:
                     return "friend"
 
-class MypageUserInfSerializer(UserInfSerializer):
-    
-    user_profile = serializers.CharField(read_only = True)
-    
-    class Meta(UserInfSerializer.Meta):
-        fields = (*UserInfSerializer.Meta.fields ,"user_profile")
-
-
-
 #user情報の汎用シリアライザ
 class MiniUserInfSerializer(serializers.ModelSerializer):
     icon_url = serializers.SerializerMethodField()
@@ -91,3 +83,8 @@ class FriendListSerializer(serializers.ModelSerializer):
         me = self.context["request"].user
         return MiniUserInfSerializer(obj.user_b if obj.user_a_id == me.id else obj.user_a, context=self.context).data
 
+#投稿を表示するシリアライザ
+class PostReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ["post_id","post_content", "post_images", "created_at", "group"]

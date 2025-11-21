@@ -11,80 +11,82 @@ urlpatterns = [
         views.SignUpView.as_view(),
         name='signup'),
     
-    # サインアップトークン送信ページのビューの呼び出し
-    path('signup_token/',
-         views.SignUpTokenView.as_view(),
-         name='signup_token'),
-    
     # ログインページのビューの呼び出し
     path('login/',
-         # ログイン用のテンプレート(フォーム)をレンダリング
-         auth_views.LoginView.as_view(template_name='login.html', next_page="/"),
-         name='login'),
+        # ログイン用のテンプレート(フォーム)をレンダリング
+        auth_views.LoginView.as_view(template_name='login.html', next_page="/"),
+        name='login'),
     
     # ログアウトのビューの呼び出し
     path('logout/',
-         auth_views.LogoutView.as_view(template_name='logout.html'),
-         name='logout'),
+        auth_views.LogoutView.as_view(template_name='logout.html'),
+        name='logout'),
     
     # マイページのビューの呼び出し
+<<<<<<< HEAD
     path('mypage/<int:pk>',
+        views.MypageView.as_view(),
+        name='mypage'),
+=======
+    path('api/mypage/<int:pk>',
          views.MypageView.as_view(),
          name='mypage'),
     
     # アイコン編集のビューの呼び出し
-    path('mypage/<int:pk>/edit/icon',
+    path('api/mypage/<int:pk>/edit/icon',
          views.EditIconView.as_view(),
          name='edit_icon'),
 
      # ニックネーム編集のビューの呼び出し
-    path('mypage/<int:pk>/edit/nickname',
+    path('api/mypage/<int:pk>/edit/nickname',
          views.EditNicknameView.as_view(),
          name='edit_nickname'),
+>>>>>>> 23d8abda56267561e0d9dccabc0950b1e1efda17
     
     # ユーザ情報のビューの呼び出し
-    path('<int:pk>',
+    path('api/<int:pk>',
          views.UserInfoView.as_view(),
          name='userinfo'),
     
+<<<<<<< HEAD
+=======
     # 誕生日編集のビューの呼び出し
-    path('<int:pk>/edit/birthday',
+    path('api/<int:pk>/edit/birthday',
          views.EditBirthdayView.as_view(),
          name='edit_birthday'),
     
+>>>>>>> 23d8abda56267561e0d9dccabc0950b1e1efda17
     # パスワード確認ページのビューの呼び出し
-    path('passwordcheck/',
+    path('api/passwordcheck/',
          views.PasswordCheckView.as_view(),
          name='passwordcheck'),
     
     # ユーザー名変更ページのビューの呼び出し
-    path('<int:pk>/change/username',
+    path('api/<int:pk>/change/username',
          views.ChangeUsernameView.as_view(),
          name='change_username'),
     
     # パスワード変更ページのビューの呼び出し
-    path('<int:pk>/change/password',
+    path('api/<int:pk>/change/password',
          views.ChangePasswordView.as_view(),
          name='change_password'),
     
     # パスワード変更完了ページのビューの呼び出し
-    path('<int:pk>/change/password/done',
+    path('api/<int:pk>/change/password/done',
          views.ChangePasswordDoneView.as_view(),
          name='change_password_done'),
     
     # email変更ページのビューの呼び出し
-    path('<int:pk>/change/email',
+    path('api/<int:pk>/change/email',
          views.ChangeEmailView.as_view(),
          name='change_email'),
-
-    # トークン送信完了
-    path("tokenup/",
-         views.TokenUpView.as_view(),
-         name="tokenup"),
-
+    
     # アカウント削除ページのビューの呼び出し
-    path('<int:pk>/delete',
+    path('api/<int:pk>/delete',
          views.UserDeleteView.as_view(),
          name='user_delete'),
+
+    #API用
     
+    path('api/mypage/<str:username>',views.MypageAPIView.as_view(), name = 'api_user_inf'),
 ]

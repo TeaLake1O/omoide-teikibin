@@ -1,12 +1,8 @@
-{%load static%}
-<html lang="ja">
-  <head>
-    <title>omoide teikibin</title>
-    <link rel="stylesheet" href="{% static 'CSS/test.css' %}">
-    <link rel="icon" type="image/png" href="{% static 'omoide_teikibin_favicon.ico' %}">
-  </head>
+{% extends 'base.html' %}
 
-  <body>
+{% block title %}おもいで定期便{% endblock %}
+
+{% block contents %}
     <h1>おもいで定期便</h1>
     
     <!-- ログイン中の表示 -->
@@ -17,7 +13,7 @@
       <button type="submit">ログアウト</button>
     </form>
     <div> <!-- 各ページへのリンク(暫定) -->
-      <a href='./api/accounts/mypage/{{ user.id }}'>マイページ</a>
+      <a href='./accounts/api/mypage/{{ user.id }}'>マイページ</a>
       
     </div>
     
@@ -27,8 +23,9 @@
       <a href={% url 'accounts:signup' %}>新規登録</a>
       <a href={% url 'accounts:login' %}>ログイン</a>
     </div>
+    
     {% endif %}
     
     <h2>サブタイトル</h2>
-  </body>
-</html>
+{% endblock %}
+

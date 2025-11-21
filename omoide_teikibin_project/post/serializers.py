@@ -13,12 +13,12 @@ from django.utils import timezone
 from django.db.models import Case, When, BooleanField
 
 #ホームページを表示するシリアライザ
-class HomePageReadSerializer(serializers.ModelSerializer):
+class HomePageReadSerializer(PostReadSerializer):
     
     post_user = serializers.SerializerMethodField(read_only = True)
-    class Meta:
+    class Meta(PostReadSerializer.Meta):
         model = Post
-        fields = ["post_id","post_content", "post_images", "created_at", "post_user","group"]
+        fields = (*PostReadSerializer.Meta.fields ,"post_user")
     
     def get_post_user(self, obj):
         return UserInfSerializer(obj.post_user, context=self.context).data
@@ -439,7 +439,7 @@ class PostCreateWriteSerializer(serializers.ModelSerializer):
 
 class CommentReadSerializer(serializers.ModelSerializer):
     user_info = UserInfSerializer(source='comment', read_only=True)
-   
+
     class Meta:
         model = Post
         fields = ['post_user', 'post_content', 'created_at', 'user_info']
