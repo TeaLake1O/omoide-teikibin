@@ -23,44 +23,44 @@ urlpatterns = [
         name='logout'),
     
     # マイページのビューの呼び出し
-    path('mypage/<int:pk>',
+    path('api/mypage/<int:pk>',
         views.MypageView.as_view(),
         name='mypage'),
     
     # ユーザ情報のビューの呼び出し
     path('api/<int:pk>',
-         views.UserInfoView.as_view(),
-         name='userinfo'),
+        views.UserInfoView.as_view(),
+        name='userinfo'),
     
     # パスワード確認ページのビューの呼び出し
     path('api/passwordcheck/',
-         views.PasswordCheckView.as_view(),
-         name='passwordcheck'),
+        views.PasswordCheckView.as_view(),
+        name='passwordcheck'),
     
     # ユーザー名変更ページのビューの呼び出し
     path('api/<int:pk>/change/username',
-         views.ChangeUsernameView.as_view(),
-         name='change_username'),
+        views.ChangeUsernameView.as_view(),
+        name='change_username'),
     
     # パスワード変更ページのビューの呼び出し
     path('api/<int:pk>/change/password',
-         views.ChangePasswordView.as_view(),
-         name='change_password'),
+        views.ChangePasswordView.as_view(),
+        name='change_password'),
     
     # パスワード変更完了ページのビューの呼び出し
     path('api/<int:pk>/change/password/done',
-         views.ChangePasswordDoneView.as_view(),
-         name='change_password_done'),
+        views.ChangePasswordDoneView.as_view(),
+        name='change_password_done'),
     
     # email変更ページのビューの呼び出し
     path('api/<int:pk>/change/email',
-         views.ChangeEmailView.as_view(),
-         name='change_email'),
+        views.ChangeEmailView.as_view(),
+        name='change_email'),
     
     # アカウント削除ページのビューの呼び出し
     path('api/<int:pk>/delete',
-         views.UserDeleteView.as_view(),
-         name='user_delete'),
+        views.UserDeleteView.as_view(),
+        name='user_delete'),
 
     #API用
     

@@ -1,0 +1,154 @@
+/* 基本トーン：ホーム画面と同じあったかオレンジ系 */
+:root{
+  --orange-600:#ff7b00;
+  --orange-500:#ff9a4b;
+  --orange-100:#fff4e6;
+  --orange-50:#fff8f0;
+  --card-bg: rgba(255,255,255,0.92);
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  font-family: "Noto Sans JP", sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+body{
+  background: linear-gradient(180deg, var(--orange-100), #ffe8c9 60%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  color:#3b3329;
+}
+
+/* ヘッダー（ホームと同じ雰囲気） */
+.top-nav{
+  width:100%;
+  max-width:900px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 16px;
+  margin-top:18px;
+  background:transparent;
+}
+
+.brand{
+  font-weight:700;
+  color:var(--orange-600);
+  font-size:1.25rem;
+}
+
+.top-actions button{
+  margin-left:8px;
+  border-radius:28px;
+  padding:6px 12px;
+  font-weight:600;
+  border:none;
+  box-shadow:0 2px 6px rgba(0,0,0,0.06);
+}
+
+.btn-login{
+  background:#fff;
+  color:var(--orange-600);
+}
+
+.btn-signup{
+  background:var(--orange-600);
+  color:#fff;
+}
+
+/* コンテナ（スマホ縦長を想定して幅狭めに中央寄せ） */
+.main-wrap{
+  width:100%;
+  max-width:900px;
+  padding:18px;
+  box-sizing:border-box;
+}
+
+.hero{
+  background:var(--card-bg);
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.06);
+  display:flex;
+  gap:18px;
+  align-items:center;
+  flex-direction:column;
+}
+
+/* レスポンシブで横並びに切替 */
+@media(min-width:900px){
+  .hero{ flex-direction:row; padding:28px 32px; }
+}
+
+.left-image{
+  flex:0 0 220px;
+  width:220px;
+  height:420px;
+  border-radius:16px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,0.03);
+}
+
+.left-image img{
+  max-width:90%;
+  max-height:90%;
+  border-radius:12px;
+  object-fit:cover;
+}
+
+.right-content{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  align-items:stretch;
+}
+
+.subtitle{
+  color:var(--orange-600);
+  font-size:1.1rem;
+  font-weight:700;
+}
+
+.explain{
+  background:#fff;
+  padding:14px;
+  border-radius:12px;
+  color:#4b4035;
+  box-shadow:inset 0 1px 0 rgba(0,0,0,0.02);
+  line-height:1.6;
+  max-height:320px;
+  overflow:auto;
+  font-size:0.95rem;
+}
+
+.signup-link{
+  display:inline-block;
+  align-self:center;
+  margin-top:8px;
+  background:var(--orange-600);
+  color:#fff;
+  padding:10px 18px;
+  border-radius:28px;
+  font-weight:700;
+  text-decoration:none;
+  box-shadow:0 6px 16px rgba(255,123,0,0.12);
+}
+
+/* 画面下部の余白（スマホらしい縦余白） */
+.spacer{ height:40px; }
+
+/* 小さめ表示での見栄え調整 */
+@media(max-width:520px){
+  .left-image{ width:150px; height:300px; }
+  .hero{ padding:14px; }
+  .brand{ font-size:1.05rem; }
+  .subtitle{ font-size:1rem; }
+}

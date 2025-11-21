@@ -1,31 +1,67 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}おもいで定期便{% endblock %}
 
-{% block contents %}
-    <h1>おもいで定期便</h1>
-    
-    <!-- ログイン中の表示 -->
-    {% if user.is_authenticated %}
-    <p>{{ user.get_username }}でログイン中</p>
-    <form method="post" action="{% url 'accounts:logout' %}">
-      {% csrf_token %}
-      <button type="submit">ログアウト</button>
-    </form>
-    <div> <!-- 各ページへのリンク(暫定) -->
-      <a href='./accounts/api/mypage/{{ user.id }}'>マイページ</a>
-      
-    </div>
-    
-    <!-- ログアウト中の表示 -->
-    {% else %}
-    <div>
-      <a href={% url 'accounts:signup' %}>新規登録</a>
-      <a href={% url 'accounts:login' %}>ログイン</a>
-    </div>
-    
-    {% endif %}
-    
-    <h2>サブタイトル</h2>
+{% block head %}
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
 {% endblock %}
 
+{% block contents %}
+  <div class="main-wrap">
+    <div class="top-nav" role="navigation" aria-label="トップナビ">
+      <div class="brand">おもいで定期便</div>
+      
+      <!-- ログイン中の表示 -->
+      {% if user.is_authenticated %}
+      <p>{{ user.get_username }}でログイン中</p>
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button type="submit">ログアウト</button>
+      </form>
+      <div> <!-- 各ページへのリンク(暫定) -->
+        <a href='./accounts/api/mypage/{{ user.id }}'>マイページ</a>
+        
+      </div>
+      
+      <!-- ログアウト中の表示 -->
+      {% else %}
+        <div class="top-actions">
+          <button class="btn-login" onclick="location.href='{% url 'accounts:signup' %}'">ログイン</button>
+          <button class="btn-signup" onclick="location.href='{% url 'accounts:login' %}'">新規登録</button>
+        </div>
+      {% endif %}
+    </div>
+
+      <!-- メインヒーロー（カード） -->
+      <section class="hero" aria-labelledby="hero-title">
+
+        <!-- 左：実際のアプリ画像（差し替え可能） -->
+        <div class="left-image" aria-hidden="true">
+          <!-- プレースホルダー画像。実際のスクショに差し替えてな -->
+          <img src="https://via.placeholder.com/250x420.png?text=アプリ+使用中" alt="アプリ使用中のイメージ">
+        </div>
+        <!-- 右：サブタイトル + 説明文 + サインアップ -->
+        <div class="right-content">
+          <div>
+            <div id="hero-title" class="subtitle">利用規約</div>
+          </div>
+
+          <div class="explain" role="article" aria-label="利用説明">
+            <strong>利用規約本文</strong>
+            <p style="margin-top:8px;">
+              ここにおもいで定期便の利用規約の本文が入ります。ユーザーは本サービスを利用することで、以下の規約に同意したものとみなされます。
+            </p>
+          </div>
+
+          <div style="display:flex; justify-content:center; margin-top:6px;">
+            <a class="signup-link" href={% url 'accounts:signup' %}>サインアップはこちら</a>
+          </div>
+        </div>
+
+      </section>
+
+    <div class="spacer"></div>
+  </div>
+{% endblock %}
