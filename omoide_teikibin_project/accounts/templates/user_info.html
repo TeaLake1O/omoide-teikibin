@@ -1,47 +1,48 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <title>User Info</title>
-  </head>
+    <head>
+        <title>User Info</title>
+    </head>
 
-  <body>
-    <main>
-      <div>
-        <h3>ユーザー情報</h3>
-        {% if user.is_authenticated %}
-          {% if user.deleted_at %}  <!-- アカウントが削除されている場合 -->
-            <p>削除されたアカウント</p>
-          {% else %}  <!-- アカウントが存在している場合 -->
-            <p>{{ user.get_username }}でログイン中</p>
-            <form method="post" action="{% url 'accounts:logout' %}">
-                {% csrf_token %}
-                <a href='./mypage/{{ object.id }}'>マイページへ</a>
-                <button type="submit">ログアウト</button>
-            </form>
-            <form method="post" action="{% url 'accounts:passwordcheck' %}">
-              {% csrf_token %}
-              ユーザー名：{{ object.username }}<button type="submit" name="change_username">変更</button>
-              パスワード：●●●●●●●●<button type="submit" name="change_password">変更</button>
-            </form>
-            <form method="post" action="./{{ object.id }}/change/email">
-              {% csrf_token %}
-              email：{{ object.email }}<button type="submit">変更</button>
-            </form>
-            <form>
-              <p>生年月日：{{ object.birthday }}<a href='./{{ object.id }}/edit/birthday'>変更</a></p>
-              <p>登録日：{{ object.date_joined }}</p>
-            </form>
+    <body>
+        <main>
+            <div>
+                <h3>ユーザー情報</h3>
+                {% if user.is_authenticated %}
+                <p>{{ user.get_username }}でログイン中</p>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <a href="./mypage/{{ object.id }}">マイページへ</a>
+                    <button type="submit">ログアウト</button>
+                </form>
+                <form>
+                    <p>
+                        ユーザー名：{{ object.username }}<a
+                            href="./{{ object.id }}"
+                            >変更</a
+                        >
+                    </p>
+                    <p>
+                        パスワード：●●●●●●●●<a href="./{{ object.id }}">変更</a>
+                    </p>
+                    <p>
+                        email：{{ object.email }}<a href="./{{ object.id }}"
+                            >変更</a
+                        >
+                    </p>
+                    <p>
+                        生年月日：{{ object.birthday }}<a
+                            href="./{{ object.id }}"
+                            >変更</a
+                        >
+                    </p>
+                    <p>登録日：{{ object.date_joined }}</p>
+                </form>
 
-            <form method="post" action="{% url 'accounts:passwordcheck' %}">
-              {% csrf_token %}
-              <button type="submit" name="delete">アカウント削除</button>
-            </form>
-          {% endif %}
-        {% else %}
-        <p>ログインしていません</p>
-        {% endif %}
-      </div>
-    </main>
-  </body>
-
+                {% else %}
+                <p>ログインしていません</p>
+                {% endif %}
+            </div>
+        </main>
+    </body>
 </html>

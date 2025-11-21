@@ -338,7 +338,6 @@ class MypageAPIView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     lookup_field = "username"
-    lookup_url_kwarg = "username"
     
     def get_queryset(self):
         
@@ -349,7 +348,8 @@ class MypageAPIView(generics.RetrieveAPIView):
             Post.objects
             .filter(
                 post_user__username = username,
-                deleted_at__isnull = True
+                deleted_at__isnull = True,
+                group__member__member = me
             ).order_by("-created_at")
         )
         
@@ -375,3 +375,18 @@ class MypageAPIView(generics.RetrieveAPIView):
         
         ctx["is_me"] = me.is_authenticated and me.username == username
         return ctx
+
+class ChangeUserInfAPIView(generics.UpdateAPIView):
+    
+    #シリアライザ
+    serializer_class = ChangeUserInfWriteSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    lookup_field = "username"
+    
+    queryset = CustomUser.objects.all()
+
+class UserInfoAPIVew(generics.RetrieveAPIView):
+    w = 1

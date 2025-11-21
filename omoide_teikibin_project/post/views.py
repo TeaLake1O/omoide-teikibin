@@ -94,6 +94,7 @@ class GroupUpdateView(generics.UpdateAPIView):
     
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
+    
     #おまじない
     queryset = Group.objects.all()
 

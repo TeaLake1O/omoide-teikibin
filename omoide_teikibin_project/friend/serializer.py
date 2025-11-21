@@ -61,7 +61,7 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         
         #friendShipに関係がすでにあった場合
         if friendship:
-            #ポジティブがTrueの場合、friendShipの有無をすでに判定しているため、承認をさす(ソフトデリートは除く)
+            #ポジティブがTrueの場合、friendShipの有無をすでに判定しているため、承認をする(ソフトデリートは除く)
             if is_positive:
                 #friendテーブルがソフトデリートサれていた場合、statusを変えてソフトデリートを解除
                 if friendship.deleted_at is not None:
@@ -94,7 +94,7 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         )
         return friendship
 
-#ユーザを検索するシリアライザ、postのUseInfSerializerを継承する
+#ユーザを検索するシリアライザ
 class FriendSearchSerializer(UserInfSerializer):
     class Meta(UserInfSerializer.Meta):
         pass

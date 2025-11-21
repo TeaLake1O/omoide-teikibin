@@ -88,4 +88,4 @@ class Post(models.Model):
         ordering = ["-created_at"]
     
     def __str__(self):
-        return f"投稿者:{self.post_user.username}"
+        return f"投稿者:{self.post_user.username}, ID:{self.post_id}"
