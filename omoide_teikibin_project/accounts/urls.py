@@ -23,42 +23,15 @@ urlpatterns = [
         name='logout'),
     
     # マイページのビューの呼び出し
-<<<<<<< HEAD
-<<<<<<< HEAD
-    path('mypage/<int:pk>',
-        views.MypageView.as_view(),
-        name='mypage'),
-=======
-=======
->>>>>>> 23d8abda56267561e0d9dccabc0950b1e1efda17
     path('api/mypage/<int:pk>',
          views.MypageView.as_view(),
          name='mypage'),
-    
-    # アイコン編集のビューの呼び出し
-    path('api/mypage/<int:pk>/edit/icon',
-         views.EditIconView.as_view(),
-         name='edit_icon'),
-
-     # ニックネーム編集のビューの呼び出し
-    path('api/mypage/<int:pk>/edit/nickname',
-         views.EditNicknameView.as_view(),
-         name='edit_nickname'),
->>>>>>> 23d8abda56267561e0d9dccabc0950b1e1efda17
     
     # ユーザ情報のビューの呼び出し
     path('api/<int:pk>',
          views.UserInfoView.as_view(),
          name='userinfo'),
     
-<<<<<<< HEAD
-=======
-    # 誕生日編集のビューの呼び出し
-    path('api/<int:pk>/edit/birthday',
-         views.EditBirthdayView.as_view(),
-         name='edit_birthday'),
-    
->>>>>>> 23d8abda56267561e0d9dccabc0950b1e1efda17
     # パスワード確認ページのビューの呼び出し
     path('api/passwordcheck/',
          views.PasswordCheckView.as_view(),
