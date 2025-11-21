@@ -24,10 +24,13 @@ urlpatterns = [
     
     # マイページのビューの呼び出し
 <<<<<<< HEAD
+<<<<<<< HEAD
     path('mypage/<int:pk>',
         views.MypageView.as_view(),
         name='mypage'),
 =======
+=======
+>>>>>>> 23d8abda56267561e0d9dccabc0950b1e1efda17
     path('api/mypage/<int:pk>',
          views.MypageView.as_view(),
          name='mypage'),
