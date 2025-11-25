@@ -82,4 +82,7 @@ class ChangeUserInfWriteSerializer(serializers.ModelSerializer):
         
         return instance
 
-
+class UserInfReadSerializer(DetailUserInfSerializer):
+    
+    class Meta(DetailUserInfSerializer.Meta):
+        pass

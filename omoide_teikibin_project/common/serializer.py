@@ -4,6 +4,22 @@ from friend.models import Friendship as FS
 from django.db.models import Q
 from post.models import Post
 
+class DetailUserInfSerializer(serializers.ModelSerializer):
+    
+    icon_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CustomUser
+        fields = ["id", "username", "icon_url","nickname", "email", "birthday", "date_joined"]
+    
+    #絶対URL取得用
+    def get_icon_url(self, obj):
+        
+        f = getattr(obj, "user_icon", None)
+        if not f:
+            return None
+        req = self.context.get("request")
+        return req.build_absolute_uri(f.url) if req else f.url
 
 
 #user情報の汎用シリアライザ
@@ -88,3 +104,4 @@ class PostReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ["post_id","post_content", "post_images", "created_at", "group"]
+

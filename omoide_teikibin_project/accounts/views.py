@@ -388,5 +388,26 @@ class ChangeUserInfAPIView(generics.UpdateAPIView):
     
     queryset = CustomUser.objects.all()
 
-class UserInfoAPIVew(generics.RetrieveAPIView):
-    w = 1
+class UserInfAPIView(generics.RetrieveAPIView):
+    
+    #シリアライザ
+    serializer_class = UserInfReadSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    lookup_field = "username"
+    
+    def get_queryset(self):
+        
+        me = self.request.user
+        
+        rs = (
+            CustomUser.objects
+            .filter(
+                username = me.username,
+                deleted_at__isnull = True
+            )
+        )
+        return rs
+    
