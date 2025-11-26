@@ -11,6 +11,16 @@ urlpatterns = [
         views.SignUpView.as_view(),
         name='signup'),
     
+    # サインアップトークン送信ページのビューの呼び出し
+    path('signup_token/',
+         views.SignUpTokenView.as_view(),
+         name='signup_token'),
+    
+    # トークン送信完了
+    path("tokenup/",
+         views.TokenUpView.as_view(),
+         name="tokenup"),
+    
     # ログインページのビューの呼び出し
     path('login/',
         # ログイン用のテンプレート(フォーム)をレンダリング
