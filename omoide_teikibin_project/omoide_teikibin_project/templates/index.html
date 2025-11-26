@@ -28,8 +28,8 @@
       <!-- ログアウト中の表示 -->
       {% else %}
         <div class="top-actions">
-          <button class="btn-login" onclick="location.href='{% url 'accounts:signup' %}'">ログイン</button>
-          <button class="btn-signup" onclick="location.href='{% url 'accounts:login' %}'">新規登録</button>
+          <button class="btn-login" onclick="location.href='{% url 'accounts:login' %}'">ログイン</button>
+          <button class="btn-signup" onclick="location.href='{% url 'accounts:signup' %}'">新規登録</button>
         </div>
       {% endif %}
     </div>
