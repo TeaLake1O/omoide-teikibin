@@ -1,20 +1,25 @@
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <title>Sign up</title>
-  </head>
+{% extends 'base.html' %}
+{% load static %}
 
-  <body>
-    <main>
-      <div>
-        <h3>サインアップ</h3>
-        <form method = "post">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit">ユーザー登録</button>
-        </form>
-      </div>
-    </main>
-  </body>
+{% block title %}サインアップ{% endblock %}
 
-</html>
+{% block head %}
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+  <main>
+    <div class="container">
+      <h1>おもいで定期便</h1>
+      <h2>アカウント新規登録</h2>
+      <form method = "post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn-register" type="submit">ユーザー登録</button>
+      </form>
+
+      <a href={% url 'accounts:login' %} class="login-link">ログインはこちら</a>
+    </div>
+  </main>
+{% endblock %}

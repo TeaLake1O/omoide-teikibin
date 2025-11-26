@@ -1,20 +1,25 @@
-<!DOCTYPE html>
-<html lang="ja">
-    <head>
-        <title>Log in</title>
-    </head>
+{% extends 'base.html' %}
+{% load static %}
 
-    <body>
-        <main>
-            <!-- エラー内容表示 -->
-            {% if form.errors %}
-            <p style="color: red">ユーザ名とパスワードが一致しません</p>
-            {% endif %}
-            <!-- ログインフォーム -->
-            <form method="post">
-                {% csrf_token %} {{ form }}
-                <button type="submit">ログイン</button>
-            </form>
-        </main>
-    </body>
-</html>
+{% block title %}ログイン{% endblock %}
+
+{% block head %}
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+  <main>
+        <h1>ログイン</h1>
+        <!-- エラー内容表示 -->
+        {% if form.errors %}
+          <p style="color: red">ユーザ名とパスワードが一致しません</p>
+        {% endif %}
+        <!-- ログインフォーム -->
+        <form method="post">
+          {% csrf_token %} {{ form }}
+          <button class="btn-login" type="submit">ログイン</button>
+          <a class="link" href="{% url 'accounts:signup' %}">新規登録はこちら</a>
+        </form>
+  </main>
+{% endblock %}

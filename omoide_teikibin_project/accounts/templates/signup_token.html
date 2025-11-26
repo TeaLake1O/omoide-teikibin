@@ -1,10 +1,14 @@
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <title>Omoide teikibin</title>
-  </head>
+{% extends 'base.html' %}
+{% load static %}
 
-  <body>
+{% block title %}メール変更リンク送信{% endblock %}
+
+{% block head %}
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
     <main>
       <h3>メール変更リンク送信</h3>
 
