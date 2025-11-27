@@ -3,7 +3,7 @@ name: Deploy to oracle
 on:
   push:
     branches:
-      - main
+      - main 
 
 jobs:
   deploy:
@@ -15,25 +15,16 @@ jobs:
 
       - name: Setup SSH
         run: |
-          echo "[DEBUG] HOME is $HOME"
+          ssh -vvv -i ~/.ssh/id_ed25519 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "echo OK"
           mkdir -p ~/.ssh
-
-          # 🔑 DEPLOY_KEY を id_ed25519 として保存
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
-          # ホスト鍵チェックは一旦オフ（切り分け用）
-          cat << 'EOF' > ~/.ssh/config
-          Host *
-            StrictHostKeyChecking no
-            UserKnownHostsFile=/dev/null
-          EOF
-
-          chmod 600 ~/.ssh/config
-
-          echo "[DEBUG] ~/.ssh contents:"
-          ls -l ~/.ssh
-
-      - name: Test SSH
+      - name: Run deploy script on server
         run: |
-          ssh -vvv ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "echo OK"
+          ssh -i ~/.ssh/id_ed25519 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "bash /home/ubuntu/deploy.sh"
