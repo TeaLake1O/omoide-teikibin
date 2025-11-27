@@ -1,38 +1,46 @@
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <title>User Info</title>
-  </head>
+{% extends 'base.html' %}
+{% load static %}
 
-  <body>
-    <main>
-      <div>
-        <h3>email変更</h3>
-        {% if user.is_authenticated %}
-        <p>{{ user.get_username }}でログイン中</p>
+{% block title %}ログイン{% endblock %}
 
-        {% if success_message %}
-          <p style="color: green;">{{ success_message }}</p>
-        {% else %}
-          <p>現在のemail：{{ user.email }}</p>
-          <form method="post">
-            {% csrf_token %}
-            <input type="password" name="password" placeholder="パスワード"><br>
-            <input type="email" name="email" placeholder="email"><br>
-            <button class="btn-register" type="submit">送信</button>
-            <p>{{ message }}</p>
-            {% if error_message %}
-              <p style="color: red;">{{ error_message }}</p>
-            {% endif %}
-          </form>
-        {% endif %}
-        <a href="../../{{ user.id }}">ユーザー情報ページへ戻る</a>
+{% block head %}
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% endblock %}
 
-        {% else %}
-        <p>ログインしていません</p>
-        {% endif %}
-      </div>
-    </main>
-  </body>
-
-</html>
+{% block contents %}
+  <main>
+    <div class="container">
+      <h1>おもいで定期便</h1>
+      <h2>email変更</h2>
+      <!-- 送信成功時 -->
+      {% if success_message %}
+        <p style="color: green;">{{ success_message }}</p>
+        <p>メールボックスを確認してください</p>
+        <form method="post">
+          {% csrf_token %}
+          <p>メールが届かない場合:</p>
+          <button class="btn-register" name="resend" value="1">再度送信する</button>
+        </form>
+      <!-- 登録完了後に送信を押した場合 -->
+      {% elif already_send %}
+        <p class="error-center">{{ already_send }}</p>
+        <a href="{% url 'accounts:login' %}" class="login-link">ログインはこちら</a>
+      <!-- 初回時送信フォーム -->
+      {% else %}
+        <p>現在のemail：{{ user.email }}</p>
+        <form method="post">
+          {% csrf_token %}
+          <input type="password" name="password" placeholder="パスワード"><br>
+          <input type="email" name="email" placeholder="email"><br>
+          <button class="btn-register" type="submit">送信</button>
+          <p>{{ message }}</p>
+          {% if error_message %}
+            <p class="error-center">{{ error_message }}</p>
+          {% endif %}
+        </form>
+      {% endif %}
+      <a href="../../{{ user.id }}">ユーザー情報ページへ戻る</a>
+    </div>
+  </main>
+{% endblock %}

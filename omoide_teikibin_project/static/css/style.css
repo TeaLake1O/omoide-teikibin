@@ -66,7 +66,7 @@ body{
 }
 
 /* コンテナ（スマホ縦長を想定して幅狭めに中央寄せ） */
-.main-wrap{
+main{
   width:100%;
   max-width:900px;
   padding:18px;
@@ -260,6 +260,22 @@ h3 {
   font-size: 0.8rem;
   color: #666;
   margin-bottom: 25px;
+}
+
+.error-center {
+  text-align: center;
+  color: #fd4c16;
+  font-size: 1.0rem;
+}
+
+/* tokenup.html */
+.message {
+  text-align: center;
+  font-size: 18px;
+  margin: 60px;
+  line-height: 32px;
+  color: #5a3e2b;
+  font-weight: 500;
 }
 
 /* login.html */

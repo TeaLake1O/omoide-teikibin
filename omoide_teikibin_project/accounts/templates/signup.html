@@ -10,6 +10,12 @@
 
 {% block contents %}
   <main>
+    <div class="top-nav" role="navigation" aria-label="トップナビ">
+      <div class="brand">おもいで定期便</div>
+      <div class="top-actions">
+        <button class="btn-login" onclick="location.href='{% url 'accounts:login' %}'">ログイン</button>
+      </div>
+    </div>
     <div class="container">
       <h1>おもいで定期便</h1>
       <h2>アカウント新規登録</h2>
