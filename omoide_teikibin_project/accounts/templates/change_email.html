@@ -19,7 +19,7 @@
             {% csrf_token %}
             <input type="password" name="password" placeholder="パスワード"><br>
             <input type="email" name="email" placeholder="email"><br>
-            <button type="submit">送信</button>
+            <button class="btn-register" type="submit">送信</button>
             <p>{{ message }}</p>
             {% if error_message %}
               <p style="color: red;">{{ error_message }}</p>

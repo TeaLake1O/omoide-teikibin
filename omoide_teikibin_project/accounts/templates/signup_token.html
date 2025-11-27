@@ -9,25 +9,26 @@
 {% endblock %}
 
 {% block contents %}
-    <main>
+  <main>
+    <div class="container">
+      <h1>おもいで定期便</h1>
+      <h2>アカウント新規登録</h2>
       <h3>メール変更リンク送信</h3>
-
       {% if success_message %}
         <p style="color: green;">{{ success_message }}</p>
         <p>メールボックスを確認してください</p>
       {% else %}
         <p>ユーザー名：{{ username }}</p>
+        <p>メールアドレス：{{ email }}</p>
         <form method="post">
           {% csrf_token %}
           <input type="password" name="password" placeholder="パスワード"><br>
-          <button type="submit">送信</button>
-        <p>メールアドレス：{{ email }}</p>
+          <button class="btn-register" type="submit">送信</button>
         <p>{{ message }}</p>
         {% if error_message %}
           <p style="color: red;">{{ error_message }}</p>
         {% endif %}
       {% endif %}
-    </main>
-  </body>
-
-</html>
+    </div>
+  </main>
+{% endblock %}
