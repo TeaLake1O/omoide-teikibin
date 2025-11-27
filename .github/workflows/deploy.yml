@@ -15,6 +15,9 @@ jobs:
 
       - name: Setup SSH
         run: |
+          ssh -vvv -i ~/.ssh/id_ed25519 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "echo OK"
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
