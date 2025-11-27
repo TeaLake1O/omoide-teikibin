@@ -16,15 +16,15 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/github_actions
-          chmod 600 ~/.ssh/github_actions
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/github
+          chmod 600 ~/.ssh/github
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
-          ssh -vvv -i ~/.ssh/github_actions \
+          ssh -vvv -i ~/.ssh/github \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
             "echo OK"
 
       - name: Run deploy script on server
         run: |
-          ssh -i ~/.ssh/github_actions \
+          ssh -i ~/.ssh/github \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "bash /home/ubuntu/runserver.sh"
+            "bash /home/opc/runserver.sh"
