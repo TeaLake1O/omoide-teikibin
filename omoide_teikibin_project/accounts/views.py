@@ -55,8 +55,12 @@ class SignUpTokenView(TemplateView):
     
     def post(self, request, *args, **kwargs):
         username = request.session['username']
+        email = request.session.get('email')
+        # メールの再送信
+        if 'resend' in request.POST:
+            return self.send_token(request, username, email)
+        # 通常送信
         password = request.POST.get('password')
-        email = request.session['email']
         # contextの設定
         context = self.get_context_data()
         
@@ -69,30 +73,45 @@ class SignUpTokenView(TemplateView):
             context['error_message'] = 'パスワードが違います'
             return self.render_to_response(context)
         
-        # NewEmailにメールアドレスを保存、トークンを生成
+        return self.send_token(request, username, email, user=user)
+    
+    # トークン送信処理
+    def send_token(self, request, username, email, user=None):
+        context = self.get_context_data()
+        # 再送信かどうか
+        if user is None:
+            # 再送信時に user を取得
+            user = CustomUser.objects.get(username=username)
+            success_text = 'メールを再送信しました'
+        else:
+            success_text = 'メールを送信しました'
+        # すでに登録完了時
+        if not user.deleted_at:
+            context['already_send'] = '既に登録は完了しています'
+            return self.render_to_response(context)
+        # NewEmail 登録
         req = NewEmail.objects.create(
-                user=user,
-                new_email=email
-            )
-        
-        # 送信するURL(トークンとemailを付随)
-        token_url = request.build_absolute_uri(reverse('accounts:tokenup') + f'?token={req.token}')
-        # メール本文
-        message=f'''以下のリンクをクリックしてトークンを確認してください：
-        
+            user=user,
+            new_email=email
+        )
+
+        # URL生成
+        token_url = request.build_absolute_uri(
+            reverse('accounts:tokenup') + f'?token={req.token}'
+        )
+        message = f'''以下のリンクをクリックしてトークンを確認してください：
+
 {token_url}
 
 このメールに心当たりがない場合は削除してください。
 '''
-        # メール送信
         send_mail(
             subject='あなたのトークンリンク',
             message=message,
             from_email='noreply@example.com',
             recipient_list=[email],
         )
-        context['success_message'] = 'メールを送信しました！'
-        
+        context['success_message'] = success_text
         return self.render_to_response(context)
 
 class TokenUpView(TemplateView):

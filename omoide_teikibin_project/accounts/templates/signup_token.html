@@ -14,9 +14,20 @@
       <h1>おもいで定期便</h1>
       <h2>アカウント新規登録</h2>
       <h3>メール変更リンク送信</h3>
+      <!-- 送信成功時 -->
       {% if success_message %}
         <p style="color: green;">{{ success_message }}</p>
         <p>メールボックスを確認してください</p>
+        <form method="post">
+          {% csrf_token %}
+          <p>メールが届かない場合:</p>
+          <button class="btn-register" name="resend" value="1">再度送信する</button>
+        </form>
+      <!-- 登録完了後に送信を押した場合 -->
+      {% elif already_send %}
+        <p style="color: red;">{{ already_send }}</p>
+        <a href={% url 'accounts:login' %} class="login-link">ログインはこちら</a>
+      <!-- 初回時送信フォーム -->
       {% else %}
         <p>ユーザー名：{{ username }}</p>
         <p>メールアドレス：{{ email }}</p>
