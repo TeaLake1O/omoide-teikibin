@@ -27,4 +27,4 @@ jobs:
         run: |
           ssh -i ~/.ssh/github_actions \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "bash /home/ubuntu/deploy.sh"
+            "bash /home/ubuntu/runserver.sh"
