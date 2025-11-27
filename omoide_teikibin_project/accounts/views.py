@@ -73,31 +73,37 @@ class SignUpTokenView(TemplateView):
             context['error_message'] = 'パスワードが違います'
             return self.render_to_response(context)
         
-        return self.send_token(request, username, email, user=user)
+        return self.send_token(request, username, email)
     
     # トークン送信処理
-    def send_token(self, request, username, email, user=None):
+    def send_token(self, request, username, email):
         context = self.get_context_data()
+        user = CustomUser.objects.get(username=username)
+        # すでに登録完了時
+        if not user.deleted_at:
+            context['already_send'] = '既に登録は完了しています'
+            return self.render_to_response(context)
+        # 既存レコードがあるか確認、なければ登録
+        new_email_obj, created = NewEmail.objects.get_or_create(
+            user=user,
+            defaults={'new_email': email}
+        )
         # 再送信かどうか
-        if user is None:
+        if not created:
+            # 既存レコードを更新
+            new_email_obj.new_email = email
+            new_email_obj.token = uuid.uuid4()
+            new_email_obj.created_at = timezone.now()
+            new_email_obj.save()
             # 再送信時に user を取得
             user = CustomUser.objects.get(username=username)
             success_text = 'メールを再送信しました'
         else:
             success_text = 'メールを送信しました'
-        # すでに登録完了時
-        if not user.deleted_at:
-            context['already_send'] = '既に登録は完了しています'
-            return self.render_to_response(context)
-        # NewEmail 登録
-        req = NewEmail.objects.create(
-            user=user,
-            new_email=email
-        )
 
         # URL生成
         token_url = request.build_absolute_uri(
-            reverse('accounts:tokenup') + f'?token={req.token}'
+            reverse('accounts:tokenup') + f'?token={new_email_obj.token}'
         )
         message = f'''以下のリンクをクリックしてトークンを確認してください：
 
@@ -268,12 +274,18 @@ class ChangeEmailView(TemplateView):
     template_name = 'change_email.html'
     
     def post(self, request, *args, **kwargs):
-        # contextの設定
-        context = self.get_context_data()
-        # ログイン中のユーザーを取得
         username = request.user
+        # メールの再送信
+        if 'resend' in request.POST:
+            req = NewEmail.objects.get(user=request.user)
+            email = req.new_email
+            return self.send_token(request, username, email)
+        # 通常送信
+        # ログイン中のユーザーを取得
         password = request.POST.get('password')
         email = request.POST.get('email')
+        # contextの設定
+        context = self.get_context_data()
         if password == None and email == None:
             context['message'] = 'パスワードと新しいメールアドレスを入力してください'
             return self.render_to_response(context)
@@ -291,31 +303,51 @@ class ChangeEmailView(TemplateView):
         if user is None:
             context['error_message'] = 'ユーザー名またはパスワードが違います'
             return self.render_to_response(context)
+        return self.send_token(request, username, email)
         
-        # NewEmailに新しいメールアドレスを保存、トークンを生成
-        req = NewEmail.objects.create(
-                user=user,
-                new_email=email
-            )
-        
-        # 送信するURL(トークンとemailを付随)
-        token_url = request.build_absolute_uri(reverse('accounts:tokenup') + f'?token={req.token}')
-        # メール本文
-        message=f'''以下のリンクをクリックしてトークンを確認してください：
-        
+    # トークン送信処理
+    def send_token(self, request, username, email):
+        context = self.get_context_data()
+        user = CustomUser.objects.get(username=username)
+        # すでに登録完了時
+        if user.email == email:
+            context['already_send'] = '既に登録は完了しています'
+            return self.render_to_response(context)
+        # 既存レコードがあるか確認、なければ登録
+        new_email_obj, created = NewEmail.objects.get_or_create(
+            user=user,
+            defaults={'new_email': email}
+        )
+        # 再送信かどうか
+        if not created:
+            # 既存レコードを更新
+            new_email_obj.new_email = email
+            new_email_obj.token = uuid.uuid4()
+            new_email_obj.created_at = timezone.now()
+            new_email_obj.save()
+            # 再送信時に user を取得
+            user = CustomUser.objects.get(username=username)
+            success_text = 'メールを再送信しました'
+        else:
+            success_text = 'メールを送信しました'
+
+        # URL生成
+        token_url = request.build_absolute_uri(
+            reverse('accounts:tokenup') + f'?token={new_email_obj.token}'
+        )
+        message = f'''以下のリンクをクリックしてトークンを確認してください：
+
 {token_url}
 
 このメールに心当たりがない場合は削除してください。
 '''
-        # メール送信
         send_mail(
             subject='あなたのトークンリンク',
             message=message,
             from_email='noreply@example.com',
             recipient_list=[email],
         )
-        context['success_message'] = 'メールを送信しました！'
-        
+        context['success_message'] = success_text
         return self.render_to_response(context)
 
 class UserDeleteView(TemplateView):
