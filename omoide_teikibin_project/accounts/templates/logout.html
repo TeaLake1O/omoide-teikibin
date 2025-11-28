@@ -1,16 +1,27 @@
-{%load static%}
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <title>Log out</title>
-    <link rel="stylesheet" href="{% static 'CSS/test.css' %}">
-  </head>
+{% extends 'base.html' %}
+{% load static %}
 
-  <body>
-    <main>
-      <h3>ログアウトしました</h3>
+{% block title %}ログアウト{% endblock %}
+
+{% block head %}
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+  <main>
+    <div class="top-nav" role="navigation" aria-label="トップナビ">
+      <div class="brand">おもいで定期便</div>
+      <div class="top-actions">
+        <button class="btn-login" onclick="location.href='{% url 'accounts:login' %}'">ログイン</button>
+        <button class="btn-signup" onclick="location.href='{% url 'accounts:signup' %}'">新規登録</button>
+      </div>
+    </div>
+    <div id="screen-done" class="screen">
+
+      <div class="message">ログアウトしました。</div>
       <!-- トップページへのリンク -->
-      <p><a href={% url 'index' %}>トップページへ</a></p>
-    </main>
-  </body>
-</html>
+      <a class="register-link" href="{% url 'index' %}">トップページへ</a>
+    </div>
+  </main>
+{% endblock %}

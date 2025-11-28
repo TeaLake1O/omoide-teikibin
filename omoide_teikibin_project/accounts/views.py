@@ -212,6 +212,7 @@ class PasswordCheckView(FormView):
             else:
                 next_url = 'accounts:userinfo'
             del self.request.session['change']
+        print(self.request.session, next_url)
         return reverse_lazy(next_url, kwargs={'pk': self.request.user.pk})
     
     def get_context_data(self, **kwargs):
@@ -234,18 +235,20 @@ class PasswordCheckView(FormView):
     def form_valid(self, form):
         # 入力を取得
         pass_text = self.request.POST.get('password', '')
-        
+        # contextの設定
+        context = self.get_context_data()
         # パスワードが正しいかチェック
         if self.request.user.check_password(pass_text):
             return super().form_valid(form)
         else:
-            return super().form_invalid(form)
+            context['error_message'] = 'パスワードが間違っています'
+            return self.render_to_response(context)
 
 class ChangeUsernameView(UpdateView):
     '''ユーザー名変更ページのビュー
     '''
     # レンダリングするテンプレート
-    template_name = 'change_password.html'
+    template_name = 'change_username.html'
     model = CustomUser
     fields = ('username',)
     # 完了ボタン押下後のリダイレクト先のURLパターン
