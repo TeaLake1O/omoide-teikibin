@@ -1,23 +1,35 @@
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <title>Omoide teikibin</title>
-  </head>
+{% extends 'base.html' %}
+{% load static %}
 
-  <body>
-    <main>
-      <h3>トークンチェック</h3>
+{% block title %}メールアドレス登録完了{% endblock %}
+
+{% block head %}
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+  <main>
+    <div class="top-nav" role="navigation" aria-label="トップナビ">
+      <div class="brand">おもいで定期便</div>
+      <div class="top-actions">
+        <button class="btn-login" onclick="location.href='{% url 'accounts:login' %}'">ログイン</button>
+      </div>
+    </div>
+    <div class="container">
+      <h2>トークンチェック</h3>
       
       {% if error_message %}
-        <p style="color:red;">{{ error_message }}</p>
+        <p class="error-center">{{ error_message }}</p>
       {% endif %}
 
       {% if token_valid %}
-        <p style="color:green;">トークンは有効です！</p>
-        <p>ユーザー名: {{ username }}</p>
-        <a href={{ url }}>{{ link_message }}</a>
+        <div class="message">
+          お使いのemailが変更されました<br>
+          再度ログインしてください
+        </div>
+        <button class="btn-register" onclick="location.href='{{ url }}'">{{ link_message }}</button>
       {% endif %}
-    </main>
-  </body>
-
-</html>
+    </div>
+  </main>
+{% endblock %}

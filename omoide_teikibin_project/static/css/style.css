@@ -7,6 +7,7 @@
   --card-bg: rgba(255,255,255,0.92);
 }
 
+/* index.html */
 html,body{
   height:100%;
   margin:0;
@@ -16,14 +17,15 @@ html,body{
 }
 
 body{
-  margin: 0;
-  font-family: "Noto Sans JP", sans-serif;
   background: linear-gradient(180deg, var(--orange-100), #ffe8c9 60%);
   display:flex;
   flex-direction:column;
   align-items:center;
-  min-height: 100vh;
   color:#3b3329;
+
+  margin: 0;
+  font-family: "Noto Sans JP", sans-serif;
+  min-height: 100vh;
 }
 
 /* ヘッダー（ホームと同じ雰囲気） */
@@ -64,7 +66,7 @@ body{
 }
 
 /* コンテナ（スマホ縦長を想定して幅狭めに中央寄せ） */
-.main-wrap{
+main{
   width:100%;
   max-width:900px;
   padding:18px;
@@ -156,7 +158,7 @@ body{
   .subtitle{ font-size:1rem; }
 }
 
-
+/* signup.html */
 .container {
   width: 90%;
   max-width: 400px;
@@ -169,7 +171,7 @@ body{
 
 h1 {
   text-align: center;
-  color: #ff7b00;
+  color: var(--orange-600);
   font-size: 1.6rem;
   margin-bottom: 10px;
 }
@@ -200,7 +202,23 @@ input {
 }
 
 input:focus {
-  border-color: #ff7b00;
+  border-color: var(--orange-600);
+}
+
+.errorlist {
+  color: #ff5722;
+  font-size: 0.9rem;
+  margin: 5px 0 10px;
+  padding-left: 0;
+}
+
+.errorlist li {
+  list-style: none;
+  background: #ffe7e0;
+  border-left: 4px solid #ff5722;
+  padding: 6px 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
 }
 
 .btn-register {
@@ -220,10 +238,68 @@ input:focus {
 }
 
 .btn-register:hover {
-  background-color: #ff7b00;
+  background-color: var(--orange-600);
 }
 
 .login-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: var(--orange-600);
+  text-decoration: none;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+/* signup_token.html */
+h3 {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.error-center {
+  text-align: center;
+  color: #fd4c16;
+  font-size: 1.0rem;
+}
+
+/* tokenup.html */
+.message {
+  text-align: center;
+  font-size: 18px;
+  margin: 60px;
+  line-height: 32px;
+  color: #5a3e2b;
+  font-weight: 500;
+}
+
+/* login.html */
+.btn-login-act {
+  display: block;
+  width: 100%;
+  background-color: #ff9800;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+.btn-login-act:hover {
+  background-color: #ff7b00;
+}
+
+.register-link {
   display: block;
   text-align: center;
   margin-top: 20px;
@@ -232,6 +308,7 @@ input:focus {
   text-decoration: none;
 }
 
-.login-link:hover {
+.register-link:hover {
   text-decoration: underline;
 }
+

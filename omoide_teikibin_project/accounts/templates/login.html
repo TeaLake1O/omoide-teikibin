@@ -10,16 +10,20 @@
 
 {% block contents %}
   <main>
-        <h1>ログイン</h1>
-        <!-- エラー内容表示 -->
-        {% if form.errors %}
-          <p style="color: red">ユーザ名とパスワードが一致しません</p>
-        {% endif %}
-        <!-- ログインフォーム -->
-        <form method="post">
-          {% csrf_token %} {{ form }}
-          <button class="btn-login" type="submit">ログイン</button>
-          <a class="link" href="{% url 'accounts:signup' %}">新規登録はこちら</a>
-        </form>
+    <div class="top-nav" role="navigation" aria-label="トップナビ">
+      <div class="brand">おもいで定期便</div>
+      <div class="top-actions">
+        <button class="btn-signup" onclick="location.href='{% url 'accounts:signup' %}'">新規登録</button>
+      </div>
+    </div>
+    <div class="container">
+      <h1>ログイン</h1>
+      <!-- ログインフォーム -->
+      <form method="post">
+        {% csrf_token %} {{ form }}
+        <button class="btn-login-act" type="submit">ログイン</button>
+        <a class="register-link" href="{% url 'accounts:signup' %}">新規登録はこちら</a>
+      </form>
+    </div>
   </main>
 {% endblock %}

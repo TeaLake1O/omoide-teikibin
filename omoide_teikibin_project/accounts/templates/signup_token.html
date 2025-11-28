@@ -9,25 +9,40 @@
 {% endblock %}
 
 {% block contents %}
-    <main>
+  <main>
+    <div class="top-nav" role="navigation" aria-label="トップナビ">
+      <div class="brand">おもいで定期便</div>
+    </div>
+    <div class="container">
+      <h1>おもいで定期便</h1>
+      <h2>アカウント新規登録</h2>
       <h3>メール変更リンク送信</h3>
-
+      <!-- 送信成功時 -->
       {% if success_message %}
         <p style="color: green;">{{ success_message }}</p>
         <p>メールボックスを確認してください</p>
+        <form method="post">
+          {% csrf_token %}
+          <p>メールが届かない場合:</p>
+          <button class="btn-register" name="resend" value="1">再度送信する</button>
+        </form>
+      <!-- 登録完了後に送信を押した場合 -->
+      {% elif already_send %}
+        <p class="error-center">{{ already_send }}</p>
+        <a href="{% url 'accounts:login' %}" class="login-link">ログインはこちら</a>
+      <!-- 初回時送信フォーム -->
       {% else %}
         <p>ユーザー名：{{ username }}</p>
+        <p>メールアドレス：{{ email }}</p>
         <form method="post">
           {% csrf_token %}
           <input type="password" name="password" placeholder="パスワード"><br>
-          <button type="submit">送信</button>
-        <p>メールアドレス：{{ email }}</p>
+          <button class="btn-register" type="submit">送信</button>
         <p>{{ message }}</p>
         {% if error_message %}
-          <p style="color: red;">{{ error_message }}</p>
+          <p class="error-center">{{ error_message }}</p>
         {% endif %}
       {% endif %}
-    </main>
-  </body>
-
-</html>
+    </div>
+  </main>
+{% endblock %}
