@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}おもいで定期便{% endblock %}
+{% block title %}トップページ{% endblock %}
 
 {% block head %}
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -45,18 +45,18 @@
         <!-- 右：サブタイトル + 説明文 + サインアップ -->
         <div class="right-content">
           <div>
-            <div id="hero-title" class="subtitle">利用規約</div>
+            <div id="hero-title" class="subtitle">おもいで定期便</div>
           </div>
 
           <div class="explain" role="article" aria-label="利用説明">
-            <strong>利用規約本文</strong>
+            <strong>「おもいで定期便」とは</strong>
             <p style="margin-top:8px;">
               ここにおもいで定期便の利用規約の本文が入ります。ユーザーは本サービスを利用することで、以下の規約に同意したものとみなされます。
             </p>
           </div>
 
           <div style="display:flex; justify-content:center; margin-top:6px;">
-            <a class="signup-link" href={% url 'accounts:signup' %}>サインアップはこちら</a>
+            <a class="signup-link" href="{% url 'accounts:signup' %}">サインアップはこちら</a>
           </div>
         </div>
 
