@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}ログイン{% endblock %}
+{% block title %}email変更{% endblock %}
 
 {% block head %}
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -47,6 +47,7 @@
       <!-- ログアウト時 -->
       {% else %}
         <p>ログインしていません</p>
+        <a href="{% url 'index' %}">ログインページへ</a>
       {% endif %}
     </div>
   </main>
