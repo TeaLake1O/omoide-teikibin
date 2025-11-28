@@ -1,28 +1,30 @@
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <title>User Info</title>
-  </head>
+{% extends 'base.html' %}
+{% load static %}
 
-  <body>
-    <main>
-      <div>
-        <h3>ユーザー名変更</h3>
-        {% if user.is_authenticated %}
-        <p>{{ user.get_username }}でログイン中</p>
-        
+{% block title %}ユーザー名変更{% endblock %}
+
+{% block head %}
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+  <main>
+    <div class="container">
+      <h2>ユーザー名変更</h2>
+      <!-- ログイン時 -->
+      {% if user.is_authenticated %}
         <form method="post">
           {% csrf_token %}
           {{ form }}
-          <button type="submit">完了</button>
+          <button class="btn-register" type="submit">完了</button>
         </form>
-        <a href="../../{{ user.id }}">ユーザー情報ページへ戻る</a>
-
-        {% else %}
+        <a class="register-link" href="../../{{ user.id }}">ユーザー情報ページへ戻る</a>
+        
+      <!-- ログアウト時 -->
+      {% else %}
         <p>ログインしていません</p>
-        {% endif %}
-      </div>
-    </main>
-  </body>
-
-</html>
+      {% endif %}
+    </div>
+  </main>
+{% endblock %}
