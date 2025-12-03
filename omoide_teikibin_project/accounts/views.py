@@ -464,4 +464,14 @@ class UserInfAPIView(generics.RetrieveAPIView):
             )
         )
         return rs
+
+class LayoutAPIView(generics.RetrieveAPIView):
     
+    #シリアライザ
+    serializer_class = LayoutReadSerializer
+    
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user

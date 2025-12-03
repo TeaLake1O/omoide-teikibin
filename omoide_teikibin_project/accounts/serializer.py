@@ -86,3 +86,9 @@ class UserInfReadSerializer(DetailUserInfSerializer):
     
     class Meta(DetailUserInfSerializer.Meta):
         pass
+
+class LayoutReadSerializer(MiniUserInfSerializer):
+    
+    class Meta(MiniUserInfSerializer.Meta):
+        pass
+
