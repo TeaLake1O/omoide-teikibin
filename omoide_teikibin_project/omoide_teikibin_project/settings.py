@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-_hc$^fumw86*^7w$mbk%31mi%yu+vb6!)tb2)cm!i@+rs(3e$r
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000","https://omoide-teikibin-front.vercel.app"]
 CORS_ALLOW_CREDENTIALS = True
 
 
