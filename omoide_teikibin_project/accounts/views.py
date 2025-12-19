@@ -11,11 +11,13 @@ from django.views.generic import TemplateView, DetailView, CreateView, FormView,
 from rest_framework.authtoken.models import Token
 
 #追加import
-from rest_framework import permissions, generics
+from rest_framework import permissions, generics,views
 from django.db.models import Subquery, OuterRef
 from post.models import *
 from django.db.models import Prefetch
 from .serializer import *
+from django.contrib.auth import logout
+from rest_framework.response import Response
 
 
 class SignUpView(CreateView):
@@ -475,3 +477,10 @@ class LayoutAPIView(generics.RetrieveAPIView):
     
     def get_object(self):
         return self.request.user
+
+class LogoutAPIView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, *args, **kwargs):
+        logout(request)
+        return Response({"status": "ok"})

@@ -79,4 +79,6 @@ urlpatterns = [
     path('api/mypage/<str:username>/change',views.ChangeUserInfAPIView.as_view(), name = 'api_change'),
     path('api/mypage/<str:username>/detail',views.UserInfAPIView.as_view(), name = 'api_detail_user_inf'),
     path('api/layout',views.LayoutAPIView.as_view(), name = 'layout'),
+    #API専用のログアウト
+    path('api/logout',views.LogoutAPIView.as_view(), name = 'api_logout'),
 ]
