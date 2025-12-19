@@ -25,14 +25,28 @@ SECRET_KEY = 'django-insecure-_hc$^fumw86*^7w$mbk%31mi%yu+vb6!)tb2)cm!i@+rs(3e$r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000","https://omoide-teikibin-front.vercel.app"]
+domain = [
+    "127.0.0.1",
+    "localhost",
+    "app.omoide-teikibin.net",
+    "omoide-teikibin.net",
+    "omoide-teikibin-front.vercel.app"
+]
+
+url = [
+    "https://omoide-teikibin-front.vercel.app",
+    "https://app.omoide-teikibin.net",
+    "http://localhost:3000"
+]
+
+ALLOWED_HOSTS = domain
+CORS_ALLOWED_ORIGINS = url
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "https://omoide-teikibin-front.vercel.app",
-]
+SESSION_COOKIE_DOMAIN = ".omoide-teikibin.net"
+CSRF_COOKIE_DOMAIN = ".omoide-teikibin.net"
+
+CSRF_TRUSTED_ORIGINS = url
 
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
