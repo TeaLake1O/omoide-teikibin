@@ -21,7 +21,7 @@
             <form method="post">
               {% csrf_token %}
               <button type="submit">はい、削除を続行</button>
-              <a href="{% url 'accounts:userinfo' %}">キャンセル</a>
+              <a href="https://app.omoide-teikibin.net/account">キャンセル</a>
             </form>
           {% elif step == 2 %}
             <h2>最終確認</h2>
@@ -29,7 +29,7 @@
             <form method="post">
               {% csrf_token %}
               <button type="submit">完全に削除する</button>
-              <a href="{% url 'accounts:userinfo' %}">やめる</a>
+              <a href="https://app.omoide-teikibin.net/account">やめる</a>
             </form>
 
           {% elif step == 3 %}
