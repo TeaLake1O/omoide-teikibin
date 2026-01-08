@@ -4,7 +4,10 @@ from typing import Literal,Optional
 from rest_framework.exceptions import ValidationError
 from django.utils.dateparse import parse_datetime
 
-type Status= Literal["friend","incoming", "outgoing","me","none"]
+from typing import Literal
+
+Status = Literal["friend", "incoming", "outgoing", "me", "none"]
+
 
 
 def fs_to_status(fs:FS,me:User)->Status:
