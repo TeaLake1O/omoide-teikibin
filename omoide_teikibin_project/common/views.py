@@ -4,7 +4,6 @@ from friend.models import Friendship
 from django.db.models import Q
 
 
-
 #ユーザを検索するView、
 class UserSearchView(generics.ListAPIView):
     #継承する
@@ -26,7 +25,6 @@ class UserSearchView(generics.ListAPIView):
             .filter(username__icontains = username)
         )
         return result
-
 
 #自身のフレンド関係が成立済みのユーザの一覧表示
 class FriendListView(generics.ListAPIView):

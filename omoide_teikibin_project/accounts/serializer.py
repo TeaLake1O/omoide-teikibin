@@ -4,11 +4,9 @@ from datetime import date
 
 class MypageUserInfSerializer(UserInfSerializer):
     
-    user_post = PostReadSerializer(many = True, read_only = True)
-    
     class Meta(UserInfSerializer.Meta):
         model = CustomUser
-        fields = (*UserInfSerializer.Meta.fields ,"user_post")
+        fields = (*UserInfSerializer.Meta.fields ,"user_profile","birthday")
 
 class ChangeUserInfWriteSerializer(serializers.ModelSerializer):
     
@@ -28,10 +26,16 @@ class ChangeUserInfWriteSerializer(serializers.ModelSerializer):
         allow_null = True,
         required = False,
     )
+    profile_text = serializers.CharField(
+        write_only=True,
+        allow_null=True,
+        required=False,
+        allow_blank=True,
+    )
     
     class Meta:
         model = CustomUser
-        fields = ["nickname", "birthday", "icon"]
+        fields = ["nickname", "birthday", "icon","profile_text"]
     
     def validate_nickname(self, nickname :str):
         
@@ -52,13 +56,16 @@ class ChangeUserInfWriteSerializer(serializers.ModelSerializer):
         
         return birthday
 
-    def validate(self, attrs):
+    def validate_profile_text(self,profile_text):
+        if profile_text is None:
+            return None
         
-        me = self.context["request"].user
-        if me.pk != self.instance.pk:
-            raise serializers.ValidationError("変更できるのは自身のみです")
+        max_length = 200
         
-        return attrs
+        if len(profile_text) > max_length :
+            raise serializers.ValidationError("文字数は２００までです")
+        
+        return profile_text
     
     def update(self, instance :CustomUser, validated_data):
         
@@ -77,15 +84,25 @@ class ChangeUserInfWriteSerializer(serializers.ModelSerializer):
             icon = validated_data["icon"]
             if icon is not None:
                 instance.user_icon = icon
+        
+        if "profile_text" in validated_data:
+            user_profile = validated_data["profile_text"]
+            if user_profile is not None:
+                instance.user_profile = user_profile
 
         instance.save()
         
         return instance
 
-class UserInfReadSerializer(DetailUserInfSerializer):
+class DetailUserInfReadSerializer(DetailUserInfSerializer):
+    date_joined = serializers.SerializerMethodField()
     
     class Meta(DetailUserInfSerializer.Meta):
-        pass
+        
+        fields = ["username", "email", "date_joined"]
+        
+    def get_date_joined(self, obj):
+        return obj.date_joined.date().isoformat()
 
 class LayoutReadSerializer(MiniUserInfSerializer):
     

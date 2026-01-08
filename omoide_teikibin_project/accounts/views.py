@@ -18,6 +18,7 @@ from django.db.models import Prefetch
 from .serializer import *
 from django.contrib.auth import logout
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 
 
 class SignUpView(CreateView):
@@ -400,7 +401,7 @@ class MypageAPIView(generics.RetrieveAPIView):
         me = self.request.user
         username = self.kwargs["username"]
         
-        user_post = (
+        """user_post = (
             Post.objects
             .filter(
                 post_user__username = username,
@@ -421,16 +422,16 @@ class MypageAPIView(generics.RetrieveAPIView):
                         to_attr="user_post",
                     )
             )
+        )"""
+        rs = (
+            CustomUser.objects
+            .filter(
+                username = username,
+                deleted_at__isnull = True,
+                #投稿のような複数あるデータはprefetch_relatedを使う
+            )
         )
         return rs
-    
-    def get_serializer_context(self):
-        ctx = super().get_serializer_context()
-        me = self.request.user
-        username = self.kwargs["username"]
-        
-        ctx["is_me"] = me.is_authenticated and me.username == username
-        return ctx
 
 class ChangeUserInfAPIView(generics.UpdateAPIView):
     
@@ -440,32 +441,25 @@ class ChangeUserInfAPIView(generics.UpdateAPIView):
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
     
-    lookup_field = "username"
+    http_method_names = ["patch"]
     
-    queryset = CustomUser.objects.all()
+    def get_object(self):
+        return self.request.user
 
 class UserInfAPIView(generics.RetrieveAPIView):
     
     #シリアライザ
-    serializer_class = UserInfReadSerializer
+    serializer_class = DetailUserInfReadSerializer
     
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
     
-    lookup_field = "username"
-    
-    def get_queryset(self):
-        
+    def get_object(self):
         me = self.request.user
-        
-        rs = (
-            CustomUser.objects
-            .filter(
-                username = me.username,
-                deleted_at__isnull = True
-            )
-        )
-        return rs
+        # ソフトデリート運用ならここで弾く
+        if getattr(me, "deleted_at", None) is not None:
+            raise NotFound()
+        return me
 
 class LayoutAPIView(generics.RetrieveAPIView):
     

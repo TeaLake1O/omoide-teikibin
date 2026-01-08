@@ -3,11 +3,15 @@ from friend.serializer import *
 
 from django.db.models import Q
 from rest_framework import permissions, generics
+from rest_framework.response import Response
 
 from django.db.models import Subquery, OuterRef
 from django.shortcuts import get_object_or_404
 
 from common.views import FriendListView
+from common.util import fs_to_status,Status
+
+
 
 
 
@@ -38,13 +42,42 @@ class RequestListView(generics.ListAPIView):
         )
         return result
 #フレンドリクエストを送るView。postはシリアライザとか指定するだけでいい
-class FriendRequestView(generics.CreateAPIView):
+class FriendRequestView(generics.GenericAPIView):
     #シリアライザ
     serializer_class = FriendWriteSerializer
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ["put"]
     #validationerrorのときこれがないとエラーが出る
     queryset = Friendship.objects.none() 
+    
+    def put(self, request, *args, **kwargs):
+        ser = self.get_serializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        friendship = ser.save()
+        if (friendship is None):
+            return Response({
+                "status":"none"
+            })
+        
+        elif (friendship.deleted_at is not None):
+            return Response({
+                "status":"none"
+            })
+            
+        else :
+            me = self.request.user
+            status:Status = fs_to_status(friendship,me)
+            return Response({
+            "status": status,
+            })
+    
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        username = self.kwargs["username"]
+        
+        ctx["username"] = username
+        return ctx
 #ユーザを検索するView
 class UserSearchView(generics.ListAPIView):
     serializer_class = FriendSearchSerializer

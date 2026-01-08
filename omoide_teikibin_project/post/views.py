@@ -8,10 +8,16 @@ from django.db.models import Q
 from rest_framework import permissions, generics
 
 from common.views import *
+from common.util import post_query
 
 from django.shortcuts import get_object_or_404
+
+from django.utils.dateparse import parse_datetime
+from rest_framework.exceptions import ValidationError
+
 #ホームページを更新するview
 class HomePageView(generics.ListAPIView):
+    pagination_class = None
     #シリアライザ
     serializer_class = HomePageReadSerializer
     #未ログインで403を返す
@@ -28,10 +34,8 @@ class HomePageView(generics.ListAPIView):
             group = OuterRef("group_id")
         )
         
-        MAX_GET_POST = 5
-        
         #migrationする
-        result = (
+        qs = (
             Post.objects
             .filter(parent_post__isnull = True)
             .filter(deleted_at__isnull = True)
@@ -40,9 +44,31 @@ class HomePageView(generics.ListAPIView):
             .annotate(member_flg = Exists(member))
             .filter(member_flg = True)
             .select_related("group", "post_user")
-            .order_by("-created_at")[:MAX_GET_POST]
         )
-        return result
+        before = self.request.query_params.get("before")
+        after  = self.request.query_params.get("after")
+        limit = self.request.query_params.get("limit")
+        
+        return post_query(before=before, after=after, raw_limit=limit,qs=qs)
+
+#mypage用の
+class MyPagePostView(generics.ListAPIView):
+    pagination_class = None
+    #シリアライザ
+    serializer_class = MypagePostReadSerializer
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "username"
+    
+    def get_queryset(self):
+        username = self.kwargs["username"]
+        qs = Post.objects.filter(post_user__username = username,deleted_at__isnull = True,parent_post__isnull = True)
+        
+        before = self.request.query_params.get("before")
+        after  = self.request.query_params.get("after")
+        limit = self.request.query_params.get("limit")
+        
+        return post_query(before=before, after=after, raw_limit=limit,qs=qs)
 
 
 #グループ一覧を表示するView
@@ -163,6 +189,7 @@ class MemberListAPIView(generics.ListAPIView):
         if not result.filter(member = me).exists():
             raise PermissionDenied()
         return result
+
 #グループ内投稿一覧View
 class GroupView(generics.RetrieveAPIView):
     serializer_class = GroupReadSerializer
@@ -178,6 +205,7 @@ class GroupView(generics.RetrieveAPIView):
             raise PermissionDenied("このグループに所属していません")
 
         return obj
+
 #投稿ポスト
 class CreatePostView(generics.CreateAPIView):
     #シリアライザ

@@ -3,6 +3,7 @@ from accounts.models import CustomUser
 from friend.models import Friendship as FS
 from django.db.models import Q
 from post.models import Post
+from common.util import fs_to_status
 
 class DetailUserInfSerializer(serializers.ModelSerializer):
     
@@ -55,15 +56,9 @@ class UserInfSerializer(serializers.ModelSerializer):
         )
         
         if not fs:
-            return None
+            return "none"
         else:
-            match fs.status:
-                case FS.Status.A2B:
-                    return "outgoing" if fs.user_a == me else "incoming"
-                case FS.Status.B2A:
-                    return "outgoing" if fs.user_b == me else "incoming"
-                case FS.Status.ACPT:
-                    return "friend"
+            return fs_to_status(fs,me)
 
 #user情報の汎用シリアライザ
 class MiniUserInfSerializer(serializers.ModelSerializer):
@@ -80,6 +75,7 @@ class MiniUserInfSerializer(serializers.ModelSerializer):
             return None
         req = self.context.get("request")
         return req.build_absolute_uri(f.url) if req else f.url
+
 #user情報の汎用シリアライザ、こっちはnicknameとusernameだけ
 class MiniUserInfNameOnlySerializer(serializers.ModelSerializer):
     class Meta:

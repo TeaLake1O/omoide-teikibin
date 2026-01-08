@@ -39,18 +39,17 @@ class FriendRequestSerializer(serializers.ModelSerializer):
 #フレンド申請、もしくはフレンド承認のpost用シリアライザ
 class FriendWriteSerializer(serializers.ModelSerializer):
     
-    other_id = serializers.IntegerField(write_only = True)
     #is_positiveはフレンド依頼、フレンド承認のような操作かそうでないかを区別するために使う
     is_positive = serializers.BooleanField(write_only = True)
     
     class Meta:
         model = Friendship
-        fields = ["other_id", "is_positive"]
+        fields = ["is_positive"]
     
     def create(self, validated_data):
         me = self.context["request"].user
         
-        other = CustomUser.objects.get(id = validated_data["other_id"])
+        other = CustomUser.objects.get(username = self.context["username"])
         
         is_positive = validated_data["is_positive"]
 
@@ -74,17 +73,17 @@ class FriendWriteSerializer(serializers.ModelSerializer):
                     friendship.status = Friendship.Status.ACPT
                     friendship.save(update_fields = ["status"])
                     return friendship
-                #すでにフレンドの場合
-                elif friendship.status == Friendship.Status.ACPT:
-                    raise serializers.ValidationError("既にフレンドです")
-                #自身が承認を行えない場合
                 else:
-                    raise serializers.ValidationError("承認は相手ユーザのみ行えます")
+                    return friendship
             #is_positiveがfalse、つまりフレンド関係の解消や申請の拒否の場合、ソフトデリートする
             else:
-                friendship.deleted_at = timezone.now()
-                friendship.save(update_fields = ["deleted_at"])
+                if friendship.deleted_at is None:
+                    friendship.deleted_at = timezone.now()
+                    friendship.save(update_fields = ["deleted_at"])
                 return friendship
+        
+        if not is_positive:
+            return None
         
         #まだ関係がつくられていないならデータを作ってreturn
         friendship = Friendship.objects.create(

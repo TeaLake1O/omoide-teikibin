@@ -7,7 +7,8 @@ from post.views import *
 app_name = 'post'
 
 urlpatterns = [
-    path('', HomePageView.as_view(), name='homepage'),
+    path('home', HomePageView.as_view(), name='homepage'),
+    path('mypage/<str:username>', MyPagePostView.as_view(), name='mypage'),
     path('group', GroupListView.as_view(), name='group_list'),
     path('group/create', GroupCreateUserListView.as_view(), name='group_create_userlist'),
     path('group/create/action', GroupCreateView.as_view(), name='group_create_action'),
