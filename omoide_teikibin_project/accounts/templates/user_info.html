@@ -15,7 +15,7 @@
           <p>{{ user.get_username }}でログイン中</p>
           <form method="post" action="{% url 'accounts:logout' %}">
               {% csrf_token %}
-              <a href='./mypage/{{ object.id }}'>マイページへ</a>
+              <a href="{% url 'accounts:mypage' %}">マイページへ</a>
               <button type="submit">ログアウト</button>
           </form>
           <form method="post" action="{% url 'accounts:passwordcheck' %}">
@@ -23,7 +23,7 @@
             ユーザー名：{{ user.username }}<button type="submit" name="change_username">変更</button><br>
             パスワード：●●●●●●●●<button type="submit" name="change_password">変更</button>
           </form>
-          <form method="post" action="./{{ object.id }}/change/email">
+          <form method="post" action="{% url 'accounts:change_email' %}">
             {% csrf_token %}
             email：{{ user.email }}<button type="submit">変更</button>
           </form>

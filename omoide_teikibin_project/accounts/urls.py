@@ -33,7 +33,7 @@ urlpatterns = [
         name='logout'),
     
     # マイページのビューの呼び出し
-    path('api/mypage/<int:pk>',
+    path('api/mypage',
         views.MypageView.as_view(),
         name='mypage'),
     
@@ -48,27 +48,27 @@ urlpatterns = [
         name='passwordcheck'),
     
     # ユーザー名変更ページのビューの呼び出し
-    path('api/<int:pk>/change/username',
+    path('api/change/username',
         views.ChangeUsernameView.as_view(),
         name='change_username'),
     
     # パスワード変更ページのビューの呼び出し
-    path('api/<int:pk>/change/password',
+    path('api/change/password',
         views.ChangePasswordView.as_view(),
         name='change_password'),
     
     # パスワード変更完了ページのビューの呼び出し
-    path('api/<int:pk>/change/password/done',
+    path('api/change/password/done',
         views.ChangePasswordDoneView.as_view(),
         name='change_password_done'),
     
     # email変更ページのビューの呼び出し
-    path('api/<int:pk>/change/email',
+    path('api/change/email',
         views.ChangeEmailView.as_view(),
         name='change_email'),
     
     # アカウント削除ページのビューの呼び出し
-    path('api/<int:pk>/delete',
+    path('api/delete',
         views.UserDeleteView.as_view(),
         name='user_delete'),
 

@@ -16,10 +16,12 @@
       {% if user.is_authenticated %}
         <form method="post">
           {% csrf_token %}
-          {{ form }}
+          <p>現在のユーザー名：{{ user.username }}</p>
+          <input type="text" name="username" placeholder="ユーザー名">
+
           <button class="btn-register" type="submit">完了</button>
         </form>
-        <a class="register-link" href="../../{{ user.id }}">ユーザー情報ページへ戻る</a>
+        <a class="register-link" href="{% url 'accounts:userinfo' %}">ユーザー情報ページへ戻る</a>
         
       <!-- ログアウト時 -->
       {% else %}

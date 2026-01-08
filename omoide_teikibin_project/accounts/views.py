@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.core.mail import send_mail
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views.generic import TemplateView, DetailView, CreateView, FormView, UpdateView
@@ -164,7 +164,7 @@ class TokenUpView(TemplateView):
             
         return context
 
-class MypageView(DetailView):
+class MypageView(TemplateView):
     '''マイページのビュー
     '''
     model = CustomUser
@@ -216,7 +216,7 @@ class PasswordCheckView(FormView):
                 next_url = 'accounts:userinfo'
             del self.request.session['change']
         print(self.request.session, next_url)
-        return reverse_lazy(next_url, kwargs={'pk': self.request.user.pk})
+        return reverse_lazy(next_url)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -247,16 +247,24 @@ class PasswordCheckView(FormView):
             context['error_message'] = 'パスワードが間違っています'
             return self.render_to_response(context)
 
-class ChangeUsernameView(UpdateView):
+class ChangeUsernameView(TemplateView):
     '''ユーザー名変更ページのビュー
     '''
     # レンダリングするテンプレート
     template_name = 'change_username.html'
-    model = CustomUser
-    fields = ('username',)
+    
+    def post(self, request, *args, **kwargs):
+        new_username = request.POST.get('username')
+
+        if new_username:
+            request.user.username = new_username
+            request.user.save()
+
+        return redirect(self.get_success_url())
+    
     # 完了ボタン押下後のリダイレクト先のURLパターン
     def get_success_url(self):
-        return reverse_lazy('accounts:userinfo', kwargs={'pk': self.request.user.pk})
+        return reverse_lazy('accounts:userinfo')
 
 class ChangePasswordView(PasswordChangeView):
     '''パスワード変更ページのビュー
@@ -266,7 +274,7 @@ class ChangePasswordView(PasswordChangeView):
     
     # パスワード変更後のリダイレクト先のURLパターン
     def get_success_url(self):
-        return reverse_lazy('accounts:change_password_done', kwargs={'pk': self.request.user.pk})
+        return reverse_lazy('accounts:change_password_done')
 
 class ChangePasswordDoneView(PasswordChangeDoneView):
     '''パスワード変更完了ページのビュー
@@ -366,7 +374,6 @@ class UserDeleteView(TemplateView):
         context = super().get_context_data(**kwargs)
         # contextに設定
         context['step'] = self.request.session.get('delete_step', 1)
-        context['cancel_url'] = reverse('accounts:userinfo', args=[self.request.user.pk])
         return context
     
     def post(self, request, *args, **kwargs):

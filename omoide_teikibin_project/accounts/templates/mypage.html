@@ -10,11 +10,11 @@
         <h3>マイページ</h3>
         {% if user.is_authenticated %}
         <p>{{ user.get_username }}でログイン中</p>
-        <a href='../userinfo'>ユーザー情報へ</a>
+        <a href="{% url 'accounts:userinfo' %}">ユーザー情報へ</a>
         <form>
           {% csrf_token %}
           <p>アイコン：<a href='./{{ object.id }}/edit/icon'>変更</a></p>
-          <p>ニックネーム：{{ object.nickname }}<a href='./{{ object.id }}/edit/nickname'>変更</a></p>
+          <p>ニックネーム：{{ user.nickname }}<a href='./{{ object.id }}/edit/nickname'>変更</a></p>
         </form>
         
         {% else %}

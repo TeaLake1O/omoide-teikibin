@@ -42,7 +42,7 @@
             {% endif %}
           </form>
         {% endif %}
-        <a class="register-link" href="../../{{ user.id }}">ユーザー情報ページへ戻る</a>
+        <a class="register-link" href="{% url 'accounts:userinfo' %}">ユーザー情報ページへ戻る</a>
 
       <!-- ログアウト時 -->
       {% else %}
