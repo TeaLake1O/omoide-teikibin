@@ -171,7 +171,7 @@ class MypageView(DetailView):
     # レンダリングするテンプレート
     template_name = 'mypage.html'
 
-class UserInfoView(DetailView):
+class UserInfoView(TemplateView):
     '''ユーザ情報ページのビュー
     '''
     model = CustomUser

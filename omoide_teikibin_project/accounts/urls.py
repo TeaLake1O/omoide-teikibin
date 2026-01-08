@@ -38,7 +38,7 @@ urlpatterns = [
         name='mypage'),
     
     # ユーザ情報のビューの呼び出し
-    path('api/<int:pk>',
+    path('api/userinfo',
         views.UserInfoView.as_view(),
         name='userinfo'),
     

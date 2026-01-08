@@ -10,7 +10,7 @@
         <h3>マイページ</h3>
         {% if user.is_authenticated %}
         <p>{{ user.get_username }}でログイン中</p>
-        <a href='../{{ object.id }}'>ユーザー情報へ</a>
+        <a href='../userinfo'>ユーザー情報へ</a>
         <form>
           {% csrf_token %}
           <p>アイコン：<a href='./{{ object.id }}/edit/icon'>変更</a></p>
