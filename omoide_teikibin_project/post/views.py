@@ -62,7 +62,12 @@ class MyPagePostView(generics.ListAPIView):
     
     def get_queryset(self):
         username = self.kwargs["username"]
-        qs = Post.objects.filter(post_user__username = username,deleted_at__isnull = True,parent_post__isnull = True)
+        qs = Post.objects.filter(
+            post_user__username = username,
+            deleted_at__isnull = True,
+            parent_post__isnull = True,
+            post_images__isnull = False
+        ).exclude(post_images = "")
         
         before = self.request.query_params.get("before")
         after  = self.request.query_params.get("after")
