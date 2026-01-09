@@ -37,8 +37,8 @@ class HomePageView(generics.ListAPIView):
         #migrationする
         qs = (
             Post.objects
-            .filter(parent_post__isnull = True)
-            .filter(deleted_at__isnull = True)
+            .filter(parent_post__isnull = True,deleted_at__isnull = True,post_images__isnull = False)
+            .exclude(post_images = "")
             #annotateは各行に計算済みのデータを作る行、この場合、memberがTrueかをmember_flgにいれてfilterしている
             #Existsはbool、Subqueryはデータそのもの
             .annotate(member_flg = Exists(member))
@@ -62,12 +62,22 @@ class MyPagePostView(generics.ListAPIView):
     
     def get_queryset(self):
         username = self.kwargs["username"]
+        me = self.request.user
+        member = Member.objects.filter(
+            member_id =me.id,
+            left_at__isnull = True,
+            group = OuterRef("group_id")
+        )
         qs = Post.objects.filter(
             post_user__username = username,
             deleted_at__isnull = True,
             parent_post__isnull = True,
             post_images__isnull = False
-        ).exclude(post_images = "")
+        ).exclude(post_images = ""
+        ).annotate(member_flg = Exists(member)
+        ).filter(member_flg = True
+        ).select_related("group", "post_user")
+
         
         before = self.request.query_params.get("before")
         after  = self.request.query_params.get("after")
