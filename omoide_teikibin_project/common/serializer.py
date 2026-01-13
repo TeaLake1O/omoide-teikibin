@@ -97,7 +97,8 @@ class FriendListSerializer(serializers.ModelSerializer):
 
 #投稿を表示するシリアライザ
 class PostReadSerializer(serializers.ModelSerializer):
+    group_name = serializers.CharField(source="group.group_name", read_only=True)
     class Meta:
         model = Post
-        fields = ["post_id","post_content", "post_images", "created_at", "group"]
+        fields = ["post_id","post_content", "post_images", "created_at", "group","group_name"]
 
