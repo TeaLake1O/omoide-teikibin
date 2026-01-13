@@ -19,6 +19,7 @@ from .serializer import *
 from django.contrib.auth import logout
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
+from accounts.utils.mail import send_token_mail
 
 
 class SignUpView(CreateView):
@@ -114,11 +115,10 @@ class SignUpTokenView(TemplateView):
 
 このメールに心当たりがない場合は削除してください。
 '''
-        send_mail(
+        send_token_mail(
             subject='あなたのトークンリンク',
             message=message,
-            from_email='noreply@example.com',
-            recipient_list=[email],
+            to_email=email
         )
         context['success_message'] = success_text
         return self.render_to_response(context)
@@ -362,7 +362,7 @@ class ChangeEmailView(TemplateView):
 
 このメールに心当たりがない場合は削除してください。
 '''
-        send_mail(
+        send_token_mail(
             subject='あなたのトークンリンク',
             message=message,
             from_email='noreply@example.com',
