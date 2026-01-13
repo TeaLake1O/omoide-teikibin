@@ -11,9 +11,9 @@
 {% block contents %}
   <main>
     <div class="container">
-        <h3>アカウント削除</h3>
-        {% if user.is_authenticated %}
-        <p>{{ user.get_username }}でログイン中</p>
+      <h3>アカウント削除</h3>
+      {% if user.is_authenticated %}
+        {% if request.session.check == 'delete' %}
           {% if step == 1 %}
             <h4>このアカウントを削除しますか？</h4>
             <h2>アカウント削除の確認</h2>
@@ -37,11 +37,14 @@
               <p>ご利用ありがとうございました。</p>
               <a href="{% url 'index' %}">ログインページへ戻る</a>
           {% endif %}
-
         {% else %}
+          <p>パスワード確認ができていません</p>
+          <a class="register-link" href="https://app.omoide-teikibin.net/account">ユーザ情報ページへ戻る</a>
+        {% endif %}
+      {% else %}
         <p>ログインしていません</p>
         <a href="{% url 'index' %}">ログインページへ</a>
-        {% endif %}
-      </div>
-    </main>
+      {% endif %}
+    </div>
+  </main>
 {% endblock %}

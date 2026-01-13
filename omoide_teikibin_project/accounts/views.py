@@ -184,6 +184,8 @@ class UserInfoView(TemplateView):
         if 'change' in self.request.session:
             self.request.session['change'] = '0'
             print(self.request.session['change'])
+        if 'check' in self.request.session:
+            del self.request.session['check']
         if 'delete_step' in self.request.session:
             self.request.session['delete_step'] = 1
             print(self.request.session['delete_step'])
@@ -203,18 +205,23 @@ class PasswordCheckView(FormView):
             # ユーザー名変更ページへ
             if self.request.session['change'] == 'username':
                 next_url = 'accounts:change_username'
+                self.request.session['check'] = 'username'
             # パスワード変更ページへ
             elif self.request.session['change'] == 'password':
                 next_url = 'accounts:change_password'
+                self.request.session['check'] = 'password'
             # email変更ページへ
             elif self.request.session['change'] == 'email':
                 next_url = 'accounts:change_email'
+                self.request.session['check'] = 'email'
             # アカウント削除ページへ
             elif self.request.session['change'] == 'user_delete':
                 next_url = 'accounts:user_delete'
+                self.request.session['check'] = 'delete'
             else:
                 next_url = 'accounts:userinfo'
             del self.request.session['change']
+            
         print(self.request.session, next_url)
         return reverse_lazy(next_url)
     
