@@ -386,14 +386,9 @@ class PostCreateWriteSerializer(serializers.ModelSerializer):
         allow_null = True,
         required = False,
     )
-    post_content = serializers.CharField(
-        write_only = True,
-        allow_null = True,
-        required = False,
-    )
     
     class Meta:
-        fields = ["post_images", "post_content","parent_post"]
+        fields = ["post_images", "post_content","parent_post","group"]
         model = Post
 
     def validate_post_images(self, image):
@@ -404,7 +399,7 @@ class PostCreateWriteSerializer(serializers.ModelSerializer):
         return text
     def validate(self, attrs):
         
-        group = self.context["group"]
+        group = attrs.get("group")
         parent_post = attrs.get("parent_post")
         image = attrs.get("post_images")
         text = attrs.get("post_content")
@@ -435,10 +430,8 @@ class PostCreateWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         
         me = self.context["request"].user
-        group = self.context["group"]
         
         post_rs = Post.objects.create(
-            group = group,
             post_user = me,
             **validated_data
         )

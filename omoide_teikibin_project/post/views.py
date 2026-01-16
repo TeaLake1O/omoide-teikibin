@@ -230,12 +230,6 @@ class CreatePostView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     #おまじない
     queryset = Post.objects.all()
-    
-    #urlからグループを取得してcontextにいれる
-    def get_serializer_context(self):
-        ctx = super().get_serializer_context()
-        ctx["group"] = get_object_or_404(Group, pk=self.kwargs["pk"])
-        return ctx
 
 class PostDetailAPIView(generics.RetrieveAPIView):
     serializer_class = PostDetailSerializer
