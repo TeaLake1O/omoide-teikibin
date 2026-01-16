@@ -75,7 +75,7 @@ class Post(models.Model):
     #URLに使うのでUUIDField
     post_id = models.UUIDField(primary_key = True,default = uuid.uuid4, verbose_name="投稿ID")
     post_user = models.ForeignKey(CustomUser,blank=True, null=True, on_delete = models.CASCADE, verbose_name="投稿者")
-    post_content = models.TextField(verbose_name="投稿内容")
+    post_content = models.TextField(verbose_name="投稿内容",blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
     updated_at = models.DateTimeField(auto_now=True,verbose_name="更新日時")
     deleted_at = models.DateTimeField(blank=True, null=True,verbose_name="削除日時")
