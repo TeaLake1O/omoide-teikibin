@@ -24,7 +24,7 @@ urlpatterns = [
     # ログインページのビューの呼び出し
     path('login/',
         # ログイン用のテンプレート(フォーム)をレンダリング
-        auth_views.LoginView.as_view(template_name='login.html', next_page="https://app.omoide-teikibin.net/home"),
+        auth_views.LoginView.as_view(template_name='login.html',),
         name='login'),
     
     # ログアウトのビューの呼び出し
