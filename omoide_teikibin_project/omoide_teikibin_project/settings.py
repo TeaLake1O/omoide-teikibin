@@ -59,6 +59,7 @@ CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+"""
 if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
@@ -66,6 +67,7 @@ if DEBUG:
     CSRF_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_DOMAIN = None
     CSRF_COOKIE_DOMAIN = None
+"""
 
 
 # Application definition
