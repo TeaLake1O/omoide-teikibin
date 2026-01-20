@@ -1,45 +1,63 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <title>User Info</title>
-</head>
+    <head>
+        <title>User Info</title>
+    </head>
 
-<body>
-  <main>
-    <div>
-      <h3>ユーザー情報</h3>
-      {% if user.is_authenticated %}
-        {% if user.deleted_at %}  <!-- アカウントが削除されている場合 -->
-          <p>削除されたアカウント</p>
-        {% else %}  <!-- アカウントが存在している場合 -->
-          <p>{{ user.get_username }}でログイン中</p>
-          <form method="post" action="{% url 'accounts:logout' %}">
-              {% csrf_token %}
-              <a href="{% url 'accounts:mypage' %}">マイページへ</a>
-              <button type="submit">ログアウト</button>
-          </form>
-          <form method="post" action="{% url 'accounts:passwordcheck' %}">
-            {% csrf_token %}
-            ユーザー名：{{ user.username }}<button type="submit" name="change_username">変更</button><br>
-            パスワード：●●●●●●●●<button type="submit" name="change_password">変更</button>
-          </form>
-          <form method="post" action="{% url 'accounts:change_email' %}">
-            {% csrf_token %}
-            email：{{ user.email }}<button type="submit">変更</button>
-          </form>
-          <form>
-            <p>生年月日：{{ user.birthday }}<a href='./{{ object.id }}/edit/birthday'>変更</a></p>
-            <p>登録日：{{ user.date_joined }}</p>
-          </form>
+    <body>
+        <main>
+            <div>
+                <h3>ユーザー情報</h3>
+                {% if user.is_authenticated %} {% if user.deleted_at %}
+                <!-- アカウントが削除されている場合 -->
+                <p>削除されたアカウント</p>
+                {% else %}
+                <!-- アカウントが存在している場合 -->
+                <p>{{ user.get_username }}でログイン中</p>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <a href="{% url 'accounts:mypage' %}">マイページへ</a>
+                    <button type="submit">ログアウト</button>
+                </form>
+                <form method="post" action="{% url 'accounts:passwordcheck' %}">
+                    {% csrf_token %} ユーザー名：{{ user.username }}<button
+                        type="submit"
+                        name="change_username"
+                    >
+                        変更</button
+                    ><br />
+                    パスワード：●●●●●●●●<button
+                        type="submit"
+                        name="change_password"
+                    >
+                        変更
+                    </button>
+                </form>
+                <form method="post" action="{% url 'accounts:change_email' %}">
+                    {% csrf_token %} email：{{ user.email }}<button
+                        type="submit"
+                    >
+                        変更
+                    </button>
+                </form>
+                <form>
+                    <p>
+                        生年月日：{{ user.birthday }}<a
+                            href="./{{ object.id }}/edit/birthday"
+                            >変更</a
+                        >
+                    </p>
+                    <p>登録日：{{ user.date_joined }}</p>
+                </form>
 
-          <form method="post" action="{% url 'accounts:passwordcheck' %}">
-            {% csrf_token %}
-            <button type="submit" name="delete">アカウント削除</button>
-          </form>
-        {% endif %}
-      {% else %}
-      <p>ログインしていません</p>
-      {% endif %}
-    </div>
-  </main>
-</body>
+                <form method="post" action="{% url 'accounts:passwordcheck' %}">
+                    {% csrf_token %}
+                    <button type="submit" name="delete">アカウント削除</button>
+                </form>
+                {% endif %} {% else %}
+                <p>ログインしていません</p>
+                {% endif %}
+            </div>
+        </main>
+    </body>
+</html>

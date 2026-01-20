@@ -16,6 +16,12 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+if os.getenv("APP_ENV", "dev") == "dev":
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / ".env")
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -53,7 +59,8 @@ CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-"""if DEBUG:
+"""
+if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SESSION_COOKIE_SAMESITE = "Lax"
@@ -61,6 +68,7 @@ CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_DOMAIN = None
     CSRF_COOKIE_DOMAIN = None
 """
+
 
 # Application definition
 
@@ -78,6 +86,51 @@ INSTALLED_APPS = [
     "post",
     "friend"
 ]
+
+"""R2"""
+
+USE_R2 = os.getenv("USE_R2", "0") == "1"
+
+if USE_R2:
+    INSTALLED_APPS += ["storages"]
+
+    bucket = os.getenv("R2_BUCKET_NAME")
+    endpoint = os.getenv("R2_ENDPOINT_URL")
+    access_key = os.getenv("R2_ACCESS_KEY_ID")
+    secret_key = os.getenv("R2_SECRET_ACCESS_KEY")
+    domain = os.getenv("R2_PUBLIC_DOMAIN")
+
+    if not all([bucket, endpoint, access_key, secret_key, domain]):
+        raise RuntimeError("R2 env vars are missing (bucket/endpoint/keys/domain)")
+
+    prefix = (os.getenv("R2_PREFIX", "") or "").strip("/")
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "bucket_name": bucket,
+                "endpoint_url": endpoint,
+                "access_key": access_key,
+                "secret_key": secret_key,
+                "region_name": "auto",
+                "signature_version": "s3v4",
+                "addressing_style": "path",
+                "querystring_auth": False,
+                "custom_domain": domain,
+                "location": prefix,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
+    MEDIA_URL = f"https://{domain}/" + (f"{prefix}/" if prefix else "")
+else:
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+"""R2"""
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -176,8 +229,6 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 # コンソールにメールを表示させる
