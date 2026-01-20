@@ -30,6 +30,7 @@ class HomePageView(generics.ListAPIView):
         #Memberのサブクエリ、memberでの条件や、OuterRefで親から引き渡されたgroup_idとgroupを比較してフィルターする
         member = Member.objects.filter(
             member_id = me.id,
+            member_id__deleted_at__isnull = True,
             left_at__isnull = True,
             group = OuterRef("group_id")
         )
@@ -37,7 +38,7 @@ class HomePageView(generics.ListAPIView):
         #migrationする
         qs = (
             Post.objects
-            .filter(parent_post__isnull = True,deleted_at__isnull = True,post_images__isnull = False)
+            .filter(parent_post__isnull = True,deleted_at__isnull = True,post_images__isnull = False,post_user__deleted_at__isnull = True)
             .exclude(post_images = "")
             #annotateは各行に計算済みのデータを作る行、この場合、memberがTrueかをmember_flgにいれてfilterしている
             #Existsはbool、Subqueryはデータそのもの
@@ -72,7 +73,8 @@ class MyPagePostView(generics.ListAPIView):
             post_user__username = username,
             deleted_at__isnull = True,
             parent_post__isnull = True,
-            post_images__isnull = False
+            post_images__isnull = False,
+            post_user__deleted_at__isnull = True
         ).exclude(post_images = ""
         ).annotate(member_flg = Exists(member)
         ).filter(member_flg = True

@@ -50,8 +50,10 @@ class UserInfSerializer(serializers.ModelSerializer):
         
         fs = (
             FS.objects
-            .filter((Q(user_a = me) & Q(user_b = obj)) | (Q(user_a = obj)|Q(user_b = me)))
-            .filter(deleted_at__isnull = True)
+            .filter(
+                (Q(user_a=me, user_b=obj) | Q(user_a=obj, user_b=me)),
+                deleted_at__isnull=True,
+            )
             .first()
         )
         

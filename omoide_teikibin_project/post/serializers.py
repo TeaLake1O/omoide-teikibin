@@ -21,7 +21,10 @@ class HomePageReadSerializer(PostReadSerializer):
         fields = (*PostReadSerializer.Meta.fields ,"post_user")
     
     def get_post_user(self, obj):
+
         return UserInfSerializer(obj.post_user, context=self.context).data
+
+
 #マイページを表示するシリアライザ
 class MypagePostReadSerializer(PostReadSerializer):
     post_user = serializers.SerializerMethodField(read_only = True)
@@ -31,7 +34,8 @@ class MypagePostReadSerializer(PostReadSerializer):
     
     def get_post_user(self, obj):
         return UserInfSerializer(obj.post_user, context=self.context).data
-    
+
+
 #グループ一覧のシリアライザ、最後のメッセージも送る
 class GroupListReadSerializer(serializers.ModelSerializer):
     
