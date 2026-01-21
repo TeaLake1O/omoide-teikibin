@@ -365,8 +365,7 @@ class ChangeEmailView(TemplateView):
         send_token_mail(
             subject='あなたのトークンリンク',
             message=message,
-            from_email='noreply@example.com',
-            recipient_list=[email],
+            to_email=email
         )
         context['success_message'] = success_text
         return self.render_to_response(context)
