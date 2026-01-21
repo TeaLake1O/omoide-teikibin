@@ -18,7 +18,7 @@
       <p>{{ user.get_username }}でログイン中</p>
       <form method="post" action="{% url 'accounts:logout' %}">
         {% csrf_token %}
-        <button type="submit">ログアウト</button>
+        <button class="btn-register" type="submit">ログアウト</button>
       </form>
       <div> <!-- 各ページへのリンク(暫定) -->
         <a href='https://app.omoide-teikibin.net/home'>ホームへ</a>
