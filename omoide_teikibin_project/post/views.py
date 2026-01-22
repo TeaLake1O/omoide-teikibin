@@ -12,9 +12,6 @@ from common.util import post_query
 
 from django.shortcuts import get_object_or_404
 
-from django.utils.dateparse import parse_datetime
-from rest_framework.exceptions import ValidationError
-
 #ホームページを更新するview
 class HomePageView(generics.ListAPIView):
     pagination_class = None

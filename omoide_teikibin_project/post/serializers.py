@@ -3,6 +3,7 @@ from rest_framework import serializers
 from common.serializer import *
 
 from post.models import *
+from notify.models import Notification
 
 from django.db import transaction
 
@@ -431,14 +432,37 @@ class PostCreateWriteSerializer(serializers.ModelSerializer):
         
         return attrs
     
+    @transaction.atomic
     def create(self, validated_data):
         
         me = self.context["request"].user
+        image_in_request = validated_data.get("post_images") 
         
         post_rs = Post.objects.create(
             post_user = me,
             **validated_data
         )
+        
+        if image_in_request:
+            def _create_notifications():
+                user_ids = (
+                    Member.objects
+                    .filter(group=post_rs.group, left_at__isnull=True,member__deleted_at__isnull= True)
+                    .exclude(member=me)
+                    .values_list("member_id", flat=True)
+                )
+                notifies = [
+                    Notification(
+                        user_id=uid,
+                        actor=me,
+                        status=Notification.Status.POST,
+                        post=post_rs,
+                        message=f"{me.nickname if me.nickname else me.username}さんの投稿があります",
+                    )
+                    for uid in user_ids
+                ]
+                Notification.objects.bulk_create(notifies)
+            transaction.on_commit(_create_notifications)
         
         return post_rs
 
