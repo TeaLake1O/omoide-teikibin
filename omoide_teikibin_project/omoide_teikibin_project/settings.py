@@ -58,7 +58,6 @@ SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-
 """
 if DEBUG:
     SESSION_COOKIE_SECURE = False
@@ -68,8 +67,6 @@ if DEBUG:
     SESSION_COOKIE_DOMAIN = None
     CSRF_COOKIE_DOMAIN = None
 """
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -84,7 +81,8 @@ INSTALLED_APPS = [
     
     "accounts",
     "post",
-    "friend"
+    "friend",
+    "notify"
 ]
 
 """R2"""
