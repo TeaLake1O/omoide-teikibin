@@ -16,13 +16,12 @@
       <!-- ログイン中の表示 -->
       {% if user.is_authenticated %}
       <p>{{ user.get_username }}でログイン中</p>
-      <form method="post" action="{% url 'accounts:logout' %}">
-        {% csrf_token %}
-        <button type="submit">ログアウト</button>
-      </form>
-      <div> <!-- 各ページへのリンク(暫定) -->
-        <a href='https://app.omoide-teikibin.net/home'>ホームへ</a>
-        
+      <div class="top-actions">
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button class="btn-login" type="submit">ログアウト</button>
+        </form>
+        <button class="btn-signup" onclick="location.href='https://app.omoide-teikibin.net/home'">ホームへ</button>
       </div>
       
       <!-- ログアウト中の表示 -->
