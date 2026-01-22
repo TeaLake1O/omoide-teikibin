@@ -271,7 +271,7 @@ class ChangeUsernameView(TemplateView):
     
     # 完了ボタン押下後のリダイレクト先のURLパターン
     def get_success_url(self):
-        return "http://localhost:3000/account"
+        return "https://app.omoide-teikibin.net/account"
 
 class ChangePasswordView(PasswordChangeView):
     '''パスワード変更ページのビュー
