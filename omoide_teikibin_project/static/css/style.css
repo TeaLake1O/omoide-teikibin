@@ -34,6 +34,7 @@ body{
   max-width:900px;
   display:flex;
   justify-content:space-between;
+  flex-wrap: wrap;
   align-items:center;
   padding:14px 16px;
   margin-top:18px;
@@ -48,7 +49,10 @@ body{
 
 .top-actions {
   display: flex;
-  align-items: center; 
+  width: 100%; 
+  margin-top: 8px;
+  align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -59,6 +63,14 @@ body{
   font-weight:600;
   border:none;
   box-shadow:0 2px 6px rgba(0,0,0,0.06);
+  white-space: nowrap;
+}
+
+@media screen and (max-width: 768px) {
+  .top-actions button {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+  }
 }
 
 .btn-login{
