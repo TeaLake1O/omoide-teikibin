@@ -58,3 +58,27 @@ class PostNotificationView(generics.ListAPIView):
         limit = self.request.query_params.get("limit")
         
         return post_query(before=before, after=after, raw_limit=limit,qs=qs)
+
+class NotificationView(generics.ListAPIView):
+    pagination_class = None
+    #シリアライザ
+    serializer_class = NotifyReadSerializer
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        
+        me = self.request.user
+        
+        #Memberのサブクエリ、memberでの条件や、OuterRefで親から引き渡されたgroup_idとgroupを比較してフィルターする
+        qs = (
+            Notification.objects
+            .filter(user=me,
+                    status__in = [Notification.Status.FRIEND ,Notification.Status.MESSAGE],
+                    post__post_user__deleted_at__isnull = True)
+        )
+        before = self.request.query_params.get("before")
+        after  = self.request.query_params.get("after")
+        limit = self.request.query_params.get("limit")
+        
+        return post_query(before=before, after=after, raw_limit=limit,qs=qs)

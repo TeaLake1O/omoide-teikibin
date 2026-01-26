@@ -3,9 +3,13 @@ from rest_framework import serializers
 from accounts.models import CustomUser
 from common.serializer import *
 from .models import Friendship, Message
+from post.models import Member
+from notify.models import Notification
 
 from django.db.models import Q
 from django.utils import timezone
+
+from django.db import transaction
 
 
 
@@ -46,6 +50,7 @@ class FriendWriteSerializer(serializers.ModelSerializer):
         model = Friendship
         fields = ["is_positive"]
     
+    @transaction.atomic
     def create(self, validated_data):
         me = self.context["request"].user
         
@@ -67,11 +72,30 @@ class FriendWriteSerializer(serializers.ModelSerializer):
                     friendship.status = Friendship.Status.A2B if friendship.user_a_id == me.id else Friendship.Status.B2A
                     friendship.deleted_at = None
                     friendship.save(update_fields = ["status", "deleted_at"])
+                    def _create_notifications():
+                        Notification.objects.create(
+                            user_id=other.id,
+                            actor_id=me.id,
+                            status=Notification.Status.FRIEND,
+                            post=None,
+                            message=f"{me.nickname if me.nickname else me.username}さんからフレンド申請があります",
+                        )
+                    transaction.on_commit(_create_notifications)
                     return friendship
                 #自身が承認を行える場合、承認する
                 elif (friendship.status == Friendship.Status.A2B and friendship.user_b_id == me.id) or (friendship.status == Friendship.Status.B2A and friendship.user_a_id == me.id):
                     friendship.status = Friendship.Status.ACPT
                     friendship.save(update_fields = ["status"])
+                    
+                    def _create_notifications():
+                        Notification.objects.create(
+                            user_id=other.id,
+                            actor_id=me.id,
+                            status=Notification.Status.FRIEND,
+                            post=None,
+                            message=f"{me.nickname if me.nickname else me.username}さんとフレンドになりました",
+                        )
+                    transaction.on_commit(_create_notifications)
                     return friendship
                 else:
                     return friendship
@@ -91,6 +115,15 @@ class FriendWriteSerializer(serializers.ModelSerializer):
             user_b = other,
             status = "A2B"
         )
+        def _create_notifications():
+            Notification.objects.create(
+                user_id=other.id,
+                actor_id=me.id,
+                status=Notification.Status.FRIEND,
+                post=None,
+                message=f"{me.nickname if me.nickname else me.username}さんからフレンド申請があります",
+            )
+        transaction.on_commit(_create_notifications)
         return friendship
 
 #ユーザを検索するシリアライザ
@@ -163,11 +196,25 @@ class DMWriteSerializer(serializers.ModelSerializer):
         
         return attrs
 
+    @transaction.atomic
     def create(self, validated_data):
         me = self.context["request"].user
+        fs = validated_data["friendship"]
+        text = validated_data["message_text"]
+        
+        other = fs.user_b if me.id == fs.user_a_id else fs.user_a
         
         m = Message.objects.create(
             sender = me,
             **validated_data
         )
+        def _create_notifications():
+            Notification.objects.create(
+                user_id=other.id,
+                actor_id=me.id,
+                status=Notification.Status.MESSAGE,
+                post=None,
+                message=text,
+                )
+        transaction.on_commit(_create_notifications)
         return m

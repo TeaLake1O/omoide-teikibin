@@ -457,7 +457,7 @@ class PostCreateWriteSerializer(serializers.ModelSerializer):
                         actor=me,
                         status=Notification.Status.POST,
                         post=post_rs,
-                        message=f"{me.nickname if me.nickname else me.username}さんの投稿があります",
+                        message=f"{me.nickname if me.nickname else me.username}さんが投稿しました",
                     )
                     for uid in user_ids
                 ]

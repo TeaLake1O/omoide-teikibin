@@ -34,4 +34,7 @@ class Notification(models.Model):
         default=Status.ELSE,
         db_index=True,)
     post = models.ForeignKey(Post, null=True, blank=True, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f"通知:{self.message}"
 
