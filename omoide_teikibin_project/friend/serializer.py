@@ -40,6 +40,7 @@ class FriendRequestSerializer(serializers.ModelSerializer):
             return obj.user_a_id == me.id
         else:
             return obj.user_b_id == me.id
+
 #フレンド申請、もしくはフレンド承認のpost用シリアライザ
 class FriendWriteSerializer(serializers.ModelSerializer):
     

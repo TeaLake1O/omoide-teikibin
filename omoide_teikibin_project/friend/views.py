@@ -99,6 +99,7 @@ class UserSearchView(generics.ListAPIView):
         )
         return result
 
+
 #DMのリストを表示するView、相手のiconと最後のメッセージを取得する
 class DMListView(generics.ListAPIView):
     #シリアライザ
@@ -128,6 +129,8 @@ class DMListView(generics.ListAPIView):
             .order_by("-send_at")
         )
         return result
+
+
 #DMを表示するView、getで受け取ったusernameと自身のDMを表示する
 class DMView(generics.ListAPIView):
     #シリアライザ
