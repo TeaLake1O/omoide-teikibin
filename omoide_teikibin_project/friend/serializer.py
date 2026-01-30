@@ -18,28 +18,15 @@ class FriendReadSerializer(FriendListSerializer):
     class Meta(FriendListSerializer.Meta):
         pass
 
-#フレンド申請のシリアライザ、is_request_user_sentを使い申請したユーザを判断する
-class FriendRequestSerializer(serializers.ModelSerializer):
-    peer = serializers.SerializerMethodField()
-    is_request_user_sent = serializers.SerializerMethodField()
+#フレンド申請のシリアライザ
+class FriendRequestSerializer(UserInfSerializer):
+    updated_at = serializers.DateTimeField(read_only=True)
     
-    class Meta:
-        model = Friendship
-        fields = ["friend_id", "status", "peer", "is_request_user_sent"]
+    class Meta(UserInfSerializer.Meta):
+        model = CustomUser
+        fields = ["id","username","nickname","icon_url","status","updated_at"]
     
-    #自身が含まれたフレンドテーブルが作成された相手をpeerとする
-    def get_peer(self, obj):
-        me = self.context["request"].user
-        other = obj.user_b if obj.user_a_id == me.id else obj.user_a
-        return MiniUserInfSerializer(other, context=self.context).data
-    
-    #送り手が自信かどうかのフラグ
-    def get_is_request_user_sent(self, obj):
-        me = self.context["request"].user
-        if obj.status == Friendship.Status.A2B:
-            return obj.user_a_id == me.id
-        else:
-            return obj.user_b_id == me.id
+
 
 #フレンド申請、もしくはフレンド承認のpost用シリアライザ
 class FriendWriteSerializer(serializers.ModelSerializer):

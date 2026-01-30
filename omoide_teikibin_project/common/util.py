@@ -3,10 +3,17 @@ from accounts.models import CustomUser as User
 from typing import Literal,Optional
 from rest_framework.exceptions import ValidationError
 from django.utils.dateparse import parse_datetime
+from rest_framework.pagination import CursorPagination
 
 from typing import Literal
 
 Status = Literal["friend", "incoming", "outgoing", "me", "none"]
+
+class UserSearchCursorPagination(CursorPagination):
+    page_size = 10
+    page_size_query_param = "limit" 
+    cursor_query_param = "cursor"
+    ordering = ("-is_exact", "id")
 
 
 
@@ -49,3 +56,26 @@ def post_query(before:str|None,after:str | None,raw_limit:str | None,qs):
         
     
         return qs
+
+def search_query(cursor:str|None,raw_limit:str | None,qs):
+        try:
+            limit  = int(raw_limit)
+        except (ValueError,TypeError):
+            limit = 10
+        
+        if (limit is None) or (limit <= 0):
+            limit = 10
+        
+        if cursor:
+            dt = int(cursor)
+            if not dt:
+                raise ValidationError()
+            qs = qs.filter(id__lt = dt)
+            
+        
+        qs = qs.order_by("id")[:limit]
+        
+    
+        return qs
+
+

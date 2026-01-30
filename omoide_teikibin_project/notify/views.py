@@ -13,15 +13,22 @@ from common.views import *
 from common.util import post_query
 
 from django.shortcuts import get_object_or_404
-
+from rest_framework.pagination import CursorPagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+class NotifyCursorPagination(CursorPagination):
+    page_size = 10
+    page_size_query_param = "limit" 
+    cursor_query_param = "cursor"
+    ordering = ("-created_at", "-notify_id")
+
 
 class PostNotificationView(generics.ListAPIView):
-    pagination_class = None
+    pagination_class = NotifyCursorPagination
     #シリアライザ
     serializer_class = PostNotifyReadSerializer
+    
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
     
@@ -32,11 +39,7 @@ class PostNotificationView(generics.ListAPIView):
             Notification.objects
             .filter(user = me,status = Notification.Status.POST,post__isnull = False)
         )
-        before = self.request.query_params.get("before")
-        after  = self.request.query_params.get("after")
-        limit = self.request.query_params.get("limit")
-        
-        return post_query(before=before, after=after, raw_limit=limit,qs=qs)
+        return qs
 
 class PostNotificationCountView(APIView):
     #未ログインで403を返す
@@ -71,7 +74,7 @@ class PostNotificationMarkReadView(APIView):
 
 
 class NotificationView(generics.ListAPIView):
-    pagination_class = None
+    pagination_class = NotifyCursorPagination
     #シリアライザ
     serializer_class = NotifyReadSerializer
     #未ログインで403を返す
@@ -87,11 +90,7 @@ class NotificationView(generics.ListAPIView):
             .filter(user=me,
                     status__in = [Notification.Status.FRIEND ,Notification.Status.MESSAGE])
         )
-        before = self.request.query_params.get("before")
-        after  = self.request.query_params.get("after")
-        limit = self.request.query_params.get("limit")
-        
-        return post_query(before=before, after=after, raw_limit=limit,qs=qs)
+        return qs
 
 class NotificationCountView(APIView):
     #未ログインで403を返す
@@ -101,7 +100,6 @@ class NotificationCountView(APIView):
         
         me = self.request.user
         
-        #Memberのサブクエリ、memberでの条件や、OuterRefで親から引き渡されたgroup_idとgroupを比較してフィルターする
         qs = (
             Notification.objects
             .filter(user=me,

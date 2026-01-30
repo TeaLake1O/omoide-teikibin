@@ -1,15 +1,15 @@
 from friend.models import *
 from friend.serializer import *
 
-from django.db.models import Q
+from django.db.models import Q,F, Case, When, IntegerField,DateTimeField
 from rest_framework import permissions, generics
 from rest_framework.response import Response
 
-from django.db.models import Subquery, OuterRef
+from django.db.models import Subquery, OuterRef,Case, When, Value, IntegerField
 from django.shortcuts import get_object_or_404
 
 from common.views import FriendListView
-from common.util import fs_to_status,Status
+from common.util import fs_to_status,Status,UserSearchCursorPagination
 
 
 
@@ -28,19 +28,46 @@ class RequestListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        user = self.request.user
         
-        result = (
-            Friendship.objects
-            .filter(Q(user_a = user) | Q(user_b = user))
-            .filter(status__in = [
-                Friendship.Status.A2B,
-                Friendship.Status.B2A,
-            ])
-            .select_related("user_a", "user_b")
-            .order_by("-friend_date")
+        me = self.request.user
+        
+        other_ids = (
+            Friendship.objects.filter(
+                Q(user_a=me) | Q(user_b=me),
+                deleted_at__isnull=True,
+                user_a__deleted_at__isnull=True,
+                user_b__deleted_at__isnull=True,
+            )
+            .exclude(status=Friendship.Status.ACPT)
+            .annotate(
+                other_user_id=Case(
+                    When(user_a=me, then=F("user_b_id")),
+                    default=F("user_a_id"),
+                    output_field=IntegerField(),
+                )
+            )
+            .values_list("other_user_id", flat=True)
+            .distinct()
         )
-        return result
+        friendship_updated_at_sq = (
+            Friendship.objects.filter(
+                deleted_at__isnull=True,
+                user_a__deleted_at__isnull=True,
+                user_b__deleted_at__isnull=True,
+            )
+            .exclude(status=Friendship.Status.ACPT)
+            .filter(
+                Q(user_a=me, user_b=OuterRef("pk")) |
+                Q(user_b=me, user_a=OuterRef("pk"))
+            )
+            .values("updated_at")[:1]
+        )
+
+        return (
+            CustomUser.objects.filter(id__in=other_ids)
+            .annotate(updated_at=Subquery(friendship_updated_at_sq, output_field=DateTimeField())).order_by("-updated_at")
+        )
+
 #フレンドリクエストを送るView。postはシリアライザとか指定するだけでいい
 class FriendRequestView(generics.GenericAPIView):
     #シリアライザ
@@ -81,6 +108,7 @@ class FriendRequestView(generics.GenericAPIView):
 #ユーザを検索するView
 class UserSearchView(generics.ListAPIView):
     serializer_class = FriendSearchSerializer
+    pagination_class = UserSearchCursorPagination
     
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
@@ -89,15 +117,19 @@ class UserSearchView(generics.ListAPIView):
         me = self.request.user
         
         username = self.request.query_params.get("username")
-        
         if not username :
             return
         
-        result = (
-            CustomUser.objects
-            .filter(username__icontains = username)
+        qs = CustomUser.objects.filter(username__icontains=username).annotate(
+            is_exact=Case(
+                When(username__iexact=username, then=Value(2)),
+                When(username__istartswith=username, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
         )
-        return result
+        
+        return qs
 
 
 #DMのリストを表示するView、相手のiconと最後のメッセージを取得する

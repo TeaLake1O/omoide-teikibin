@@ -26,7 +26,8 @@ class Friendship(models.Model):
     
     status = models.CharField(max_length = 4, choices = Status.choices, default = Status.A2B)
     
-    created_at = models.DateTimeField(auto_now_add = True, verbose_name="作成日時")
+    created_at = models.DateTimeField(auto_now_add= True, verbose_name="作成日時")
+    updated_at = models.DateTimeField(auto_now=True,null = True, blank = True, verbose_name = "申請日")
     friend_date = models.DateTimeField(null = True, blank = True, verbose_name = "フレンド成立日")
     
     deleted_at = models.DateTimeField(null = True, blank = True, verbose_name = "フレンド解消日")

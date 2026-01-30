@@ -6,15 +6,25 @@ from .models import Post, Group, Member
 
 from django.db.models import Q
 from rest_framework import permissions, generics
+from rest_framework.pagination import CursorPagination
 
 from common.views import *
 from common.util import post_query
 
 from django.shortcuts import get_object_or_404
 
-#ホームページを更新するview
-class HomePageView(generics.ListAPIView):
-    pagination_class = None
+#HomePageViewなど無限スクロールと新規投稿取得の両方が必要なviewは、自前クエリで投稿を返すのとページネーションで投稿を返すのにわける
+
+
+class PostCursorPagination(CursorPagination):
+    page_size = 4
+    page_size_query_param = "limit" 
+    cursor_query_param = "cursor"
+    ordering = ("-created_at", "-post_id")
+
+#ホームページを更新するview、カーソルあり
+class CursorHomePageView(generics.ListAPIView):
+    pagination_class = PostCursorPagination
     #シリアライザ
     serializer_class = HomePageReadSerializer
     #未ログインで403を返す
@@ -43,22 +53,11 @@ class HomePageView(generics.ListAPIView):
             .filter(member_flg = True)
             .select_related("group", "post_user")
         )
-        before = self.request.query_params.get("before")
-        after  = self.request.query_params.get("after")
-        limit = self.request.query_params.get("limit")
         
-        return post_query(before=before, after=after, raw_limit=limit,qs=qs)
+        return qs
 
-#mypage用の
-class MyPagePostView(generics.ListAPIView):
-    pagination_class = None
-    #シリアライザ
-    serializer_class = MypagePostReadSerializer
-    #未ログインで403を返す
-    permission_classes = [permissions.IsAuthenticated]
-    lookup_field = "username"
-    
-    def get_queryset(self):
+class BaseMypagePostView:
+    def get_base_queryset(self):
         username = self.kwargs["username"]
         me = self.request.user
         member = Member.objects.filter(
@@ -76,14 +75,18 @@ class MyPagePostView(generics.ListAPIView):
         ).annotate(member_flg = Exists(member)
         ).filter(member_flg = True
         ).select_related("group", "post_user")
+        return qs
 
-        
-        before = self.request.query_params.get("before")
-        after  = self.request.query_params.get("after")
-        limit = self.request.query_params.get("limit")
-        
-        return post_query(before=before, after=after, raw_limit=limit,qs=qs)
 
+class CursorMypagePostView(BaseMypagePostView,generics.ListAPIView):
+    pagination_class = PostCursorPagination
+    #シリアライザ
+    serializer_class = MypagePostReadSerializer
+    #未ログインで403を返す
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return self.get_base_queryset()
 
 #グループ一覧を表示するView
 class GroupListView(generics.ListAPIView):
