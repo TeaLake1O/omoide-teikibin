@@ -110,7 +110,9 @@ class GroupListView(generics.ListAPIView):
             .filter(member__member = me, member__left_at__isnull = True)
             .annotate(last_post_content = Subquery(post.values("post_content")[:1]),
                 last_post_username = Subquery(post.values("post_user__username")[:1]),
-                last_post_nickname = Subquery(post.values("post_user__nickname")[:1]))
+                last_post_nickname = Subquery(post.values("post_user__nickname")[:1]),
+                last_post_created_at = Subquery(post.values("created_at")[:1]))
+            
             #.annotate(is_member = Exists(member))
             #.filter(is_member = True)
         )
@@ -208,7 +210,7 @@ class MemberListAPIView(generics.ListAPIView):
         return result
 
 #グループ内投稿一覧View
-class GroupView(generics.RetrieveAPIView):
+class GroupInfoView(generics.RetrieveAPIView):
     serializer_class = GroupReadSerializer
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'pk'
@@ -223,6 +225,25 @@ class GroupView(generics.RetrieveAPIView):
 
         return obj
 
+#グループ内投稿を表示するview
+class GroupPostsView(generics.ListAPIView):
+    serializer_class = PostInGroupReadSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        pk = self.kwargs["pk"]
+        group = get_object_or_404(Group, pk=pk)
+
+        is_member = group.member_set.filter(
+            member=self.request.user,
+            left_at__isnull=True
+        ).exists()
+        if not is_member:
+            raise PermissionDenied("このグループに所属していません")
+
+        return Post.objects.filter(group=group).order_by("-created_at")
+    
 #投稿ポスト
 class CreatePostView(generics.CreateAPIView):
     #シリアライザ

@@ -43,10 +43,11 @@ class GroupListReadSerializer(serializers.ModelSerializer):
     last_post_nickname = serializers.CharField(read_only = True)
     last_post_username = serializers.CharField(read_only = True)
     last_post_content = serializers.CharField(read_only = True)
+    last_post_created_at = serializers.DateTimeField(read_only = True)
     
     class Meta:
         model = Group
-        fields = ["id", "group_name", "group_image", "last_post_nickname", "last_post_username", "last_post_content"]
+        fields = ["id", "group_name", "group_image", "last_post_nickname", "last_post_username", "last_post_content","last_post_created_at"]
 
 
 #グループ作成画面のシリアライザ、ユーザのフレンド一覧を表示する
@@ -366,16 +367,13 @@ class MemberReadSerializer(serializers.ModelSerializer):
         model = Member
         fields = ['id', 'member', 'member_info']        
 
-#グループ内投稿を表示するシリアライザ
+#グループ情報のシリアライザ
 class GroupReadSerializer(serializers.ModelSerializer):
-    post = serializers.SerializerMethodField(read_only = True)
     
     class Meta:
         model = Group
-        fields = ["id", "group_name", "group_image", "group_description", "post"]
-    def get_post(self, obj):
-        posts = Post.objects.filter(group = obj, deleted_at__isnull = True)
-        return PostInGroupReadSerializer(posts, many=True, context=self.context).data
+        fields = ["id", "group_name", "group_image", "group_description"]
+
 class PostInGroupReadSerializer(serializers.ModelSerializer):
     user_info = UserInfSerializer(source='post_user', read_only=True)
     class Meta:

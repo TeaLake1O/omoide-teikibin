@@ -17,7 +17,9 @@ urlpatterns = [
     path("group/<int:pk>/member/friend", GroupInviteFriendListView.as_view(), name = "invite_friend"),
     
     path("group/action", CreatePostView.as_view(), name = "create_post"),
-    path('group/<int:pk>', views.GroupView.as_view(), name='group_detail_page'),
+    
+    path('group/<int:pk>', views.GroupInfoView.as_view(), name='group_detail_page'),
+    path('group/<int:pk>/posts', views.GroupPostsView.as_view(), name='group_detail_posts'),
     
     path('detail/<uuid:post_id>/comments/', CommentListAPIView.as_view(), name='comment_list_api'),
     path('detail/<uuid:post_id>/', PostDetailAPIView.as_view(), name='post_detail_page')

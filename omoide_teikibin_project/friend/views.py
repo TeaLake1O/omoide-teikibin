@@ -4,6 +4,7 @@ from friend.serializer import *
 from django.db.models import Q,F, Case, When, IntegerField,DateTimeField
 from rest_framework import permissions, generics
 from rest_framework.response import Response
+from rest_framework.pagination import CursorPagination
 
 from django.db.models import Subquery, OuterRef,Case, When, Value, IntegerField
 from django.shortcuts import get_object_or_404
@@ -13,7 +14,11 @@ from common.util import fs_to_status,Status,UserSearchCursorPagination
 
 
 
-
+class DmPagination(CursorPagination):
+    page_size = 10
+    page_size_query_param = "limit" 
+    cursor_query_param = "cursor"
+    ordering = ("-send_at")
 
 #自身のフレンド関係が成立済みのユーザの一覧表示
 class MyFriendListView(FriendListView):
@@ -165,6 +170,7 @@ class DMListView(generics.ListAPIView):
 
 #DMを表示するView、getで受け取ったusernameと自身のDMを表示する
 class DMView(generics.ListAPIView):
+    pagination_class = DmPagination
     #シリアライザ
     serializer_class = DMReadSerializer
     #未ログインで403を返す
@@ -183,9 +189,10 @@ class DMView(generics.ListAPIView):
                 )
             .select_related("friendship")
             .filter(~Q(deleted_at__isnull = False))
-            .order_by("-send_at")
         )
         return result
+
+
 #メッセージを送るView。
 class DMSendView(generics.CreateAPIView):
     #シリアライザ
