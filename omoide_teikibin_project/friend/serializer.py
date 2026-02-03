@@ -155,8 +155,17 @@ class DMReadSerializer(serializers.ModelSerializer):
 class DMWriteSerializer(serializers.ModelSerializer):
     
     friendship_id = serializers.PrimaryKeyRelatedField(source = "friendship", queryset = Friendship.objects.all() , write_only = True)
-    message_text = serializers.CharField(required = True, allow_blank = True, write_only = True)
-    message_image = serializers.ImageField(required = True, allow_null = True, write_only = True)
+    message_text = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        write_only=True
+    )
+    message_image = serializers.ImageField(
+        required=False,
+        allow_null=True,
+        write_only=True
+    )
     
     class Meta:
         model = Message
@@ -187,8 +196,11 @@ class DMWriteSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         me = self.context["request"].user
-        fs = validated_data["friendship"]
-        text = validated_data["message_text"]
+        fs = validated_data.get("friendship")
+        text = validated_data.get("message_text")
+        
+        if not text :
+            text = "画像を送信しました。"
         
         other = fs.user_b if me.id == fs.user_a_id else fs.user_a
         
