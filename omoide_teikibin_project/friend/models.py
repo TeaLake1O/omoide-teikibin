@@ -28,7 +28,7 @@ class Friendship(models.Model):
     
     created_at = models.DateTimeField(auto_now_add= True, verbose_name="作成日時")
     updated_at = models.DateTimeField(auto_now=True,null = True, blank = True, verbose_name = "申請日")
-    friend_date = models.DateTimeField(auto_now_add=True,null = True, blank = True, verbose_name = "フレンド成立日")
+    friend_date = models.DateTimeField(auto_now=True,null = True, blank = True, verbose_name = "フレンド成立日")
     
     deleted_at = models.DateTimeField(null = True, blank = True, verbose_name = "フレンド解消日")
     
