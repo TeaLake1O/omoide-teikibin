@@ -42,10 +42,6 @@ class Friendship(models.Model):
             models.CheckConstraint(
                 condition = ~Q(user_a = F('user_b')),
                 name="friend_a_noteq_b",
-            ),models.CheckConstraint(
-                #__ltでless thanになる（より小さい）
-                condition= Q(user_a__lt = F('user_b')),
-                name = "combinations_already_exist",
             ),
             models.UniqueConstraint(
                 fields=['user_a', 'user_b'],
