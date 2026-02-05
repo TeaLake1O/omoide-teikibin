@@ -373,12 +373,15 @@ class GroupReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ["id", "group_name", "group_image", "group_description"]
+    
 
-class PostInGroupReadSerializer(serializers.ModelSerializer):
-    user_info = UserInfSerializer(source='post_user', read_only=True)
-    class Meta:
+class PostInGroupReadSerializer(PostReadSerializer):
+    post_user = serializers.SerializerMethodField(read_only = True)
+    class Meta(PostReadSerializer.Meta):
         model = Post
-        fields = ['post_id', 'post_content', 'post_images', 'created_at', 'user_info', "parent_post"]  
+        fields = PostReadSerializer.Meta.fields + ["post_user","parent_post"]
+    def get_post_user(self, obj):
+        return UserInfSerializer(obj.post_user, context=self.context).data
 
 #投稿のpostシリアライザ
 class PostCreateWriteSerializer(serializers.ModelSerializer):

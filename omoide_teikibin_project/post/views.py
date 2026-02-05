@@ -225,10 +225,17 @@ class GroupInfoView(generics.RetrieveAPIView):
 
         return obj
 
+
+class GroupPagination(CursorPagination):
+    page_size = 10
+    page_size_query_param = "limit" 
+    cursor_query_param = "cursor"
+    ordering = ("-created_at")
 #グループ内投稿を表示するview
 class GroupPostsView(generics.ListAPIView):
     serializer_class = PostInGroupReadSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = GroupPagination
     lookup_field = 'pk'
 
     def get_queryset(self):
@@ -242,12 +249,14 @@ class GroupPostsView(generics.ListAPIView):
         if not is_member:
             raise PermissionDenied("このグループに所属していません")
 
-        return Post.objects.filter(group=group).order_by("-created_at")
-    
+        return Post.objects.filter(group=group)
+
+
 #投稿ポスト
 class CreatePostView(generics.CreateAPIView):
     #シリアライザ
     serializer_class = PostCreateWriteSerializer
+    
     
     #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
