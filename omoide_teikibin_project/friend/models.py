@@ -43,11 +43,6 @@ class Friendship(models.Model):
                 check = ~Q(user_a = F('user_b')),
                 name="friend_a_noteq_b",
             ),
-            models.CheckConstraint(
-                #__ltでless thanになる（より小さい）
-                check = Q(user_a__lt = F('user_b')),
-                name = "combinations_already_exist",
-            ),
             models.UniqueConstraint(
                 fields=['user_a', 'user_b'],
                 name="friend_unique",
@@ -69,3 +64,11 @@ class Message(models.Model):
         
     def __str__(self):
         return f"{self.friendship.user_a}(送信者A)と{self.friendship.user_b}(送信者B)のメッセージ"
+    
+
+"""
+            models.CheckConstraint(
+                #__ltでless thanになる（より小さい）
+                check = Q(user_a__lt = F('user_b')),
+                name = "combinations_already_exist",
+            ),"""
