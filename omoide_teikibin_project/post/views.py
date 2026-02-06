@@ -115,7 +115,7 @@ class GroupListView(generics.ListAPIView):
             
             #.annotate(is_member = Exists(member))
             #.filter(is_member = True)
-        )
+        ).order_by("-last_post_created_at")
         return result
 
 

@@ -106,14 +106,14 @@ class GroupCreateWriteSerializer(serializers.ModelSerializer):
     #トランザクション、すべて成功か失敗すべきときはこれをつくる
     @transaction.atomic
     def create(self, validated_data):
+        
         me = self.context["request"].user
         
         users = validated_data["send_ids"]
         
-        image = validated_data["group_image"]
+        image = validated_data.get("group_image")
         
-        name = validated_data["group_name"]
-            
+        name = validated_data.get("group_name")
         creator_name = me.nickname if me.nickname else me.username
         
         #グループを作成
