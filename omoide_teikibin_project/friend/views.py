@@ -139,33 +139,32 @@ class UserSearchView(generics.ListAPIView):
 
 #DMのリストを表示するView、相手のiconと最後のメッセージを取得する
 class DMListView(generics.ListAPIView):
-    #シリアライザ
     serializer_class = DMListReadSerializer
-    #未ログインで403を返す
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get_queryset(self):
-        #メッセージごとの最新の主キーを取る
-        last_msg_id = (
-            Message.objects
-            #friendship（外部キー）と一致するfriendship_idを抽出
-            .filter(friendship = OuterRef('friendship_id'))
-            .filter(deleted_at__isnull = True)
-            .order_by('-send_at')
-            .values('pk')[:1]
-        )
-        
         user = self.request.user
-        result = (
+
+        last_msg = (
             Message.objects
-            .select_related("friendship", "friendship__user_a", "friendship__user_b", "sender")
-            .filter(Q(friendship__user_a = user) | Q(friendship__user_b = user))
-            .filter(friendship__status = Friendship.Status.ACPT)
-            .annotate(last_msg_id = Subquery(last_msg_id))
-            .filter(pk = F("last_msg_id"))
+            .filter(friendship_id=OuterRef("pk"), deleted_at__isnull=True)
             .order_by("-send_at")
         )
-        return result
+
+        qs = (
+            Friendship.objects
+            .select_related("user_a", "user_b")
+            .filter(Q(user_a=user) | Q(user_b=user))
+            .filter(status=Friendship.Status.ACPT)
+            .annotate(
+                last_msg_id=Subquery(last_msg.values("pk")[:1]),
+                last_msg_content=Subquery(last_msg.values("message_text")[:1]),
+                last_msg_send_at=Subquery(last_msg.values("send_at")[:1]),
+                last_msg_sender_id=Subquery(last_msg.values("sender")[:1]),
+            )
+            .order_by("-last_msg_send_at")
+        )
+        return qs
 
 
 #DMを表示するView、getで受け取ったusernameと自身のDMを表示する

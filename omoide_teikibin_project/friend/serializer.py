@@ -11,8 +11,6 @@ from django.utils import timezone
 
 from django.db import transaction
 
-
-
 #フレンド一覧のシリアライザ、フレンドが成立しているときのみ
 class FriendReadSerializer(FriendListSerializer):
     class Meta(FriendListSerializer.Meta):
@@ -122,21 +120,29 @@ class FriendSearchSerializer(UserInfSerializer):
 #DM一覧のシリアライザ
 class DMListReadSerializer(serializers.ModelSerializer):
     
-    message_id = serializers.IntegerField(source="pk", read_only = True)
     other = serializers.SerializerMethodField(read_only = True)
-    sender_id = serializers.IntegerField(source="sender.id", read_only=True)
-    sender_username = serializers.CharField(source="sender.username", read_only=True)
-    sender_nickname = serializers.CharField(source="sender.nickname", read_only=True)
+    last_msg_id = serializers.IntegerField(read_only=True, allow_null=True)
+    last_msg_content = serializers.CharField(read_only=True, allow_null=True)
+    last_msg_send_at = serializers.DateTimeField(read_only=True, allow_null=True)
+    last_msg_sender_id = serializers.IntegerField(read_only=True, allow_null=True)
     
     class Meta:
-        model = Message
-        fields = ["message_id", "other", "message_text", "send_at", "sender_id", "sender_username", "sender_nickname"]
+        model = Friendship
+        fields = [
+            "other",
+            "last_msg_id",
+            "last_msg_content",
+            "last_msg_send_at",
+            "last_msg_sender_id",
+            "friend_id"
+        ]
+
     
     #自身が含まれたフレンドテーブルが作成された相手をpeerとする
     def get_other(self, obj):
         me = self.context["request"].user
-        f = obj.friendship
-        other = f.user_a if f.user_b_id == me.id else f.user_b
+        other = obj.user_a if obj.user_b_id == me.id else obj.user_b
+
         return MiniUserInfSerializer(other, context=self.context).data
 
 #DM表示のシリアライザ
@@ -154,7 +160,7 @@ class DMReadSerializer(serializers.ModelSerializer):
 #DM送信用のシリアライザ
 class DMWriteSerializer(serializers.ModelSerializer):
     
-    friendship_id = serializers.PrimaryKeyRelatedField(source = "friendship", queryset = Friendship.objects.all() , write_only = True)
+    other_username = serializers.CharField(write_only=True)
     message_text = serializers.CharField(
         required=False,
         allow_blank=True,
@@ -169,27 +175,46 @@ class DMWriteSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Message
-        fields = ["friendship_id", "message_text", "message_image"]
-    #バリデーション
+        fields = ["other_username", "message_text", "message_image"]
+    
     def validate(self, attrs):
         me = self.context["request"].user
-        fs = attrs.get("friendship")
+        other_username = attrs.get("other_username")
         image = attrs.get("message_image")
         text = attrs.get("message_text")
-        
-        #フレンドシップに自身が入っていなかったら
-        if me.id not in (fs.user_a_id, fs.user_b_id):
-            raise serializers.ValidationError("このメッセージを送信する権限がありません")
-        
-        #フレンド関係が成立していなかったら
-        if fs.status != Friendship.Status.ACPT or fs.deleted_at is not None:
-            raise serializers.ValidationError("このメッセージを送信する権限がありません")
-        
+
+        if image is None and (text is None or text.strip() == ""):
+            raise serializers.ValidationError("テキストか画像のどちらかのデータが必要です")
+
+
         #もしimageとtextの両方が空だったら
         if image is None and (text.strip() == "" or text is None):
             raise serializers.ValidationError("テキストか画像のどちらかのデータが必要です")
         elif text is not None and  text.strip() == "":
             attrs["message_text"] = None
+
+        fs = (
+            Friendship.objects
+            .select_related("user_a", "user_b")
+            .filter(
+                Q(user_a=me, user_b__username=other_username) |
+                Q(user_b=me, user_a__username=other_username)
+            )
+            .filter(status=Friendship.Status.ACPT, deleted_at__isnull=True)
+            .first()
+        )
+
+        if fs is None:
+            raise serializers.ValidationError("このユーザーとのフレンド関係が存在しません")
+
+        attrs["friendship"] = fs
+        
+        
+        #フレンド関係が成立していなかったら
+        if fs.status != Friendship.Status.ACPT or fs.deleted_at is not None:
+            raise serializers.ValidationError("このメッセージを送信する権限がありません")
+        
+        
         
         return attrs
 
@@ -198,7 +223,7 @@ class DMWriteSerializer(serializers.ModelSerializer):
         me = self.context["request"].user
         fs = validated_data.get("friendship")
         text = validated_data.get("message_text")
-        
+        validated_data.pop("other_username", None)
         if not text :
             text = "画像を送信しました。"
         
@@ -208,6 +233,7 @@ class DMWriteSerializer(serializers.ModelSerializer):
             sender = me,
             **validated_data
         )
+        print(m)
         def _create_notifications():
             Notification.objects.create(
                 user_id=other.id,

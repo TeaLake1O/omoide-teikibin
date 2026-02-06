@@ -47,7 +47,7 @@ class GroupListReadSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Group
-        fields = ["id", "group_name", "group_image", "last_post_nickname", "last_post_username", "last_post_content","last_post_created_at"]
+        fields = ["id", "group_name", "group_image","created_at", "last_post_nickname", "last_post_username", "last_post_content","last_post_created_at"]
 
 
 #グループ作成画面のシリアライザ、ユーザのフレンド一覧を表示する
@@ -372,7 +372,7 @@ class GroupReadSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Group
-        fields = ["id", "group_name", "group_image", "group_description"]
+        fields = ["id", "group_name", "group_image", "group_description","created_at"]
     
 
 class PostInGroupReadSerializer(PostReadSerializer):

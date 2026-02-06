@@ -12,7 +12,7 @@ def gen_image_path_group(instance, filename):
     #拡張子を保持しつつ名前を変更
     ext = filename.split('.')[-1].lower()
     newname = f"group_icon.{ext}"
-    return f"group/{instance.id}/{newname}"
+    return f"group/{instance.id}/{uuid.uuid4()}/{newname}"
 def gen_image_path_post(instance, filename):
     ext = filename.split('.')[-1].lower()
     return f"group/post/{instance.post_id}.{ext}"
