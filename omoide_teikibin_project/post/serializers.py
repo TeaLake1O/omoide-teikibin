@@ -365,7 +365,7 @@ class MemberReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Member
-        fields = ['id', 'member', 'member_info']        
+        fields = [ 'member', 'member_info']        
 
 #グループ情報のシリアライザ
 class GroupReadSerializer(serializers.ModelSerializer):
