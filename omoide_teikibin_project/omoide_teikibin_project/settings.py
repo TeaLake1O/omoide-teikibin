@@ -230,4 +230,14 @@ LOGIN_REDIRECT_URL = "/"
 
 
 # コンソールにメールを表示させる
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+"""Email (SMTP2GO)"""
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "mail.smtp2go.com"
+EMAIL_PORT = int(os.getenv("SMTP2GO_PORT", "2525"))  # 2525 推奨。587でも可
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("SMTP2GO_USER")
+EMAIL_HOST_PASSWORD = os.getenv("SMTP2GO_PASS")
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@omoide-teikibin.net")
