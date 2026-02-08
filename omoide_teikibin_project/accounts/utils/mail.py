@@ -1,7 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
+"""
 def send_token_mail(subject, message, to_email):
     smtp_host = 'smtp.gmail.com'
     smtp_port = 587
@@ -20,3 +20,4 @@ def send_token_mail(subject, message, to_email):
         server.starttls()
         server.login(from_email, app_password)
         server.send_message(msg)
+"""
