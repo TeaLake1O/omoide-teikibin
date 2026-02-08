@@ -1,6 +1,13 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+from django.core.mail import send_mail
+from django.conf import settings
+
+def send_token_mail(subject, message, to_email):
+    return send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [to_email])
+
 """
 def send_token_mail(subject, message, to_email):
     smtp_host = 'smtp.gmail.com'
