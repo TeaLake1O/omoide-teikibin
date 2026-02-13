@@ -468,20 +468,16 @@ class PostCreateWriteSerializer(serializers.ModelSerializer):
         return post_rs
 
 
-class CommentReadSerializer(serializers.ModelSerializer):
-    user_info = UserInfSerializer(source='post_user', read_only=True)
+class CommentReadSerializer(PostReadSerializer):
+    post_user = UserInfSerializer( read_only=True)
 
-    class Meta:
+    class Meta(PostReadSerializer.Meta):
         model = Post
-        fields = ['post_id',"parent_post" , 'post_content', 'post_images', 'created_at', 'user_info', 'group']
+        fields = (*PostReadSerializer.Meta.fields,"post_user")
 
-class PostDetailSerializer(serializers.ModelSerializer):
-    user_info = UserInfSerializer(source='post_user', read_only=True)
-    class Meta:
+
+class PostDetailSerializer(PostReadSerializer):
+    post_user = UserInfSerializer(read_only=True)
+    class Meta(PostReadSerializer.Meta):
         model = Post
-        fields = ['post_id', 'post_content', 'post_images', 'created_at', 'user_info', 'group']
-
-    def get_user_info(self, obj):
-        return UserInfSerializer(obj.post_user, context=self.context).data  
-    def get_comments(self, obj):
-        return CommentReadSerializer(obj.post_user, context=self.context).data 
+        fields = (*PostReadSerializer.Meta.fields,"post_user")

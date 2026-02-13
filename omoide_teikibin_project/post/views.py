@@ -278,7 +278,8 @@ class PostDetailAPIView(generics.RetrieveAPIView):
         return obj
 
 class CommentListAPIView(generics.ListAPIView):
-    serializer_class = CommentReadSerializer
+    serializer_class = PostDetailSerializer
+    pagination_class = PostCursorPagination
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -288,5 +289,5 @@ class CommentListAPIView(generics.ListAPIView):
         if not post.group.member_set.filter(member=self.request.user, left_at__isnull=True).exists():
             raise PermissionDenied("あなたはこの投稿のコメントを見る権限がありません。")
 
-        return Post.objects.filter(parent_post=post, deleted_at__isnull=True).select_related('post_user').order_by('created_at')
+        return Post.objects.filter(parent_post=post, deleted_at__isnull=True).select_related('post_user')
 

@@ -7,7 +7,7 @@ from common.serializer import MiniUserInfSerializer
 class PostMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ["post_id", "post_content", "post_images"]
+        fields = ["post_id", "post_content", "post_images","group"]
 
 class NotifyReadSerializer(serializers.ModelSerializer):
     
