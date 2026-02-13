@@ -20,7 +20,7 @@
             <h2>アカウント削除の確認</h2>
             <p>この操作は取り消せません。本当に削除しますか？</p>
             <div class="button-group">
-              <button class="btn-orange" onclick="location.href='https://app.omoide-teikibin.net/account'">キャンセル</button>
+              <button class="btn-orange" onclick="location.href='https://app.omoide-teikibin.net/setting'">キャンセル</button>
               <form method="post">
                 {% csrf_token %}
                 <button class="btn-outline-orange" type="submit">はい、削除を続行</button>
@@ -31,7 +31,7 @@
             <h2>ユーザ名：{{ user.get_username }}</h2>
             <p><strong>本当に本当に削除しますか？</strong></p>
             <div class="button-group">
-              <button class="btn-orange" onclick="location.href='https://app.omoide-teikibin.net/account'">キャンセル</button>
+              <button class="btn-orange" onclick="location.href='https://app.omoide-teikibin.net/setting'">キャンセル</button>
               <form method="post">
                 {% csrf_token %}
                 <button class="btn-outline-orange" type="submit">完全に削除する</button>
@@ -45,7 +45,7 @@
           {% endif %}
         {% else %}
           <p>パスワード確認ができていません</p>
-          <a class="register-link" href="https://app.omoide-teikibin.net/account">ユーザ情報ページへ戻る</a>
+          <a class="register-link" href="https://app.omoide-teikibin.net/setting">ユーザ情報ページへ戻る</a>
         {% endif %}
       {% else %}
         <p>ログインしていません</p>
