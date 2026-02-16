@@ -1,4 +1,5 @@
 from django import forms
+from django.core.validators import RegexValidator
 # UserCreationFormクラスをインポート
 from django.contrib.auth.forms import UserCreationForm
 # models.pyで定義したカスタムUserモデルをインポート
@@ -7,6 +8,16 @@ from .models import CustomUser
 class CustomUserCreationForm(UserCreationForm):
     '''UserCreationFormのサブクラス
     '''
+    username = forms.CharField(
+        label='ユーザー名',
+        max_length=150,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-Z0-9]+$',
+                message='ユーザー名は英数字のみで入力してください。'
+            )
+        ]
+    )
     class Meta:
         '''UserCreationFormのインナークラス
         Attributes:
