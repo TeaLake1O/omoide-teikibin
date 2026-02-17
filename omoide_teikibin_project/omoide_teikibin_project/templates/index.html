@@ -39,7 +39,9 @@
         <!-- 左：実際のアプリ画像（差し替え可能） -->
         <div class="left-image" aria-hidden="true">
           <!-- プレースホルダー画像。実際のスクショに差し替えてな -->
-          <img src="https://via.placeholder.com/250x420.png?text=アプリ+使用中" alt="アプリ使用中のイメージ">
+          <img src="{% static 'images/mockup1.png' %}"
+           alt="アプリ使用中のイメージ"
+           class="app-image">
         </div>
         <!-- 右：サブタイトル + 説明文 + サインアップ -->
         <div class="right-content">
